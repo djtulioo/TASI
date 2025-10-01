@@ -36,9 +36,9 @@ A arquitetura do sistema segue o modelo C4 para garantir clareza e manutenibilid
 ```mermaid
 graph TD
     %% Definição de Estilos
-    classDef user fill:#87CEEB,stroke:#333,stroke-width:2px;
-    classDef system fill:#90EE90,stroke:#333,stroke-width:2px;
-    classDef external fill:#D3D3D3,stroke:#333,stroke-width:2px;
+    classDef user fill:#87CEEB,stroke:#333,stroke-width:2px,color:#222;
+    classDef system fill:#90EE90,stroke:#333,stroke-width:2px,color:#222;
+    classDef external fill:#D3D3D3,stroke:#333,stroke-width:2px,color:#222;
 
     subgraph "Usuário"
         politico("fa:fa-user Político / Assessor")
