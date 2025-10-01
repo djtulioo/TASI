@@ -72,7 +72,7 @@ graph TD
 
 Para executar o projeto localmente, siga as instruções detalhadas em nosso guia de build.
 
-➡️ **Guia de Build e Execução (BUILD.md)**
+➡️ **[Guia de Build e Execução](BUILD.md)**
 
 ---
 
@@ -80,7 +80,7 @@ Para executar o projeto localmente, siga as instruções detalhadas em nosso gui
 
 Estamos abertos a contribuições! Se você tem interesse em melhorar o Pulsar Político, seja corrigindo um bug ou adicionando uma nova funcionalidade, por favor, leia nosso guia de contribuição.
 
-➡️ **Guia de Contribuição (CONTRIBUTING.md)**
+➡️ **[Guia de Contribuição](CONTRIBUTING.md)**
 
 ---
 
