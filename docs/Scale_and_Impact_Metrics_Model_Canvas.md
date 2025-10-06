@@ -1,62 +1,76 @@
 # Canvas de Métricas de Escala e Impacto - Pulsar Político
 
-Este documento organiza as métricas essenciais para monitorar a operação, o desempenho e o impacto da plataforma Pulsar Político.
+Este documento organiza as métricas para monitorar a operação, o desempenho e o impacto da plataforma Pulsar Político, alinhada à sua missão de ser uma ponte de comunicação entre cidadãos e gestores.
 
 ### 1. Objetivo do Monitoramento
 
-- Garantir a eficácia, a eficiência e a precisão da plataforma na análise de percepção pública. O monitoramento visa validar se a ferramenta está fornecendo insights acionáveis e de alta qualidade para as equipes políticas, alinhado aos objetivos estratégicos do projeto.
+- Medir a eficácia da plataforma em criar uma ponte de comunicação entre cidadãos e gestores públicos. O objetivo é garantir que a ferramenta colete feedback representativo, gere insights acionáveis e contribua para uma tomada de decisão mais precisa e baseada em evidências.
 
 ### 2. Métricas de Uso
 
-- **Usuários Ativos (Diário/Mensal):** Número de assessores/políticos que acessam a plataforma.
-- **Termos Monitorados:** Quantidade de políticos, temas ou palavras-chave sendo ativamente rastreados.
-- **Frequência de Acesso:** Média de logins por usuário por semana.
-- **Relatórios Gerados/Exportados:** Número de relatórios que os usuários geram a partir dos dados.
+- **Engajamento Cidadão:**
+  - Número de conversas iniciadas/concluídas por dia/semana.
+  - Taxa de conclusão das conversas (funil de engajamento).
+  - Número de cidadãos únicos interagindo com o chatbot.
+- **Uso pelo Gestor Público:**
+  - Usuários ativos (gestores/analistas) na plataforma.
+  - Frequência de acesso aos dashboards.
+  - Número de relatórios e insights gerados/exportados.
+  - Volume de documentos (atas, transcrições) submetidos para análise.
 
 ### 3. Métricas de Desempenho
 
-- **Latência da Coleta:** Tempo entre a publicação de um post (ex: tweet) e sua exibição na plataforma (end-to-end).
-- **Acurácia do Modelo de Sentimento:** Percentual de acerto (Precisão, Recall, F1-Score) do modelo de IA, medido contra um conjunto de dados de validação rotulado manualmente.
-- **Taxa de Processamento:** Número de menções (tweets, posts, etc.) processadas por hora.
-- **Tempo de Resposta da API:** Latência (em ms) para carregar os dados nos dashboards.
-- **Uptime do Sistema:** Disponibilidade da plataforma (ex: 99,5%).
+- **Qualidade da IA:**
+  - Acurácia da categorização de tópicos (ex: saúde, segurança).
+  - Qualidade da sumarização (avaliada por humanos).
+  - Taxa de respostas não compreendidas pelo chatbot.
+- **Performance Técnica:**
+  - Tempo de resposta do chatbot.
+  - Latência de carregamento dos dashboards e processamento de documentos.
+  - Uptime do Sistema (ex: 99,5%).
 
-### 4. Métricas de Impacto no Negócio (para o cliente)
+### 4. Métricas de Impacto (para a Gestão Pública)
 
-- **Redução no Tempo de Análise:** Comparativo de horas/homem gastas para gerar um relatório de percepção antes e depois da ferramenta.
-- **Velocidade de Detecção de Crise:** Tempo médio para a plataforma alertar sobre um pico de sentimento negativo relevante.
-- **Adoção da Ferramenta:** Percentual da equipe de comunicação do cliente que utiliza a plataforma como sua principal fonte de insights.
+- **Qualitativas (via entrevistas):**
+  - Número de decisões/políticas públicas que foram influenciadas pelos insights da plataforma.
+  - Percepção de clareza dos gestores sobre as prioridades da população.
+  - Valor percebido ao analisar canais existentes (ex: "Isso nos deu uma nova visão sobre as audiências públicas").
+- **Quantitativas:**
+  - Redução no tempo para identificar as principais demandas populares.
+  - Adoção da ferramenta como fonte primária para planejamento.
 
 ### 5. Métricas de Satisfação do Usuário
 
-- **Net Promoter Score (NPS):** "Em uma escala de 0 a 10, o quanto você recomendaria o Pulsar Político a um colega?"
-- **Customer Satisfaction Score (CSAT):** Pesquisas pontuais após o uso de uma feature chave (ex: "O resumo gerado foi útil?").
-- **Taxa de Retenção de Clientes:** Percentual de clientes que renovam o uso da plataforma após um período de teste/contrato.
+- **Para o Cidadão (no final do chat):**
+  - CSAT: "Quão fácil foi expressar sua opinião?" (escala de 1 a 5).
+  - Feedback qualitativo: "Você se sentiu ouvido?".
+- **Para o Gestor Público (na plataforma):**
+  - NPS: "Em uma escala de 0 a 10, o quanto você recomendaria o Pulsar Político a outro órgão público?".
+  - Utilidade do Insight: "Este resumo foi útil para sua análise?" (Sim/Não).
 
 ### 6. Ferramentas de Monitoramento
 
-- **Uso e Desempenho:** Grafana, Prometheus (para infraestrutura), Datadog ou Sentry (para performance de API e frontend).
+- **Uso e Desempenho:** Ferramentas de analytics (ex: Google Analytics), logs da aplicação, Sentry, Grafana.
 - **Satisfação:** Ferramentas de pesquisa in-app (ex: Hotjar, Pendo) ou formulários simples.
-- **Impacto no Negócio:** Entrevistas qualitativas e questionários com os clientes.
+- **Impacto na Gestão:** Entrevistas qualitativas e questionários com os gestores.
 
 ### 7. Benchmarks (Metas para o MVP)
 
-- **Latência da Coleta:** < 5 minutos.
-- **Acurácia do Modelo de Sentimento:** > 80% (F1-Score para 3 classes).
+- **Acurácia da Categorização:** > 85% (F1-Score).
+- **Taxa de Conclusão do Chat:** > 70%.
 - **Uptime do Sistema:** > 99%.
-- **CSAT:** > 4/5 em features chave.
+- **CSAT (Cidadão):** > 4/5.
 
 ### 8. Acompanhamento de Tendências
 
-- Dashboards internos (Grafana/Kibana) para visualização em tempo real das métricas de desempenho.
-- Relatórios semanais automáticos sobre métricas de uso e saúde do sistema.
+- Relatórios semanais sobre métricas de uso e engajamento (cidadão e gestor).
 - Análise trimestral dos resultados de NPS e CSAT para guiar o roadmap de produto.
 
 ### 9. Ações Baseadas nas Métricas
 
-- **Acurácia < 80%:** Iniciar um ciclo de re-treinamento do modelo de IA com mais dados rotulados.
-- **Latência da Coleta > 5 min:** Investigar gargalos nos workers de coleta ou no pipeline de processamento.
-- **Baixa Adoção de uma Feature:** Realizar entrevistas com usuários para entender a usabilidade e o valor percebido.
+- **Acurácia < 85%:** Iniciar um ciclo de re-treinamento do modelo de IA com mais dados rotulados por humanos.
+- **Baixa Taxa de Conclusão do Chat:** Revisar o fluxo conversacional, simplificar perguntas ou reduzir o número de etapas.
+- **Baixo CSAT/NPS:** Realizar entrevistas com os usuários (cidadãos ou gestores) para entender os pontos de atrito e o valor percebido.
 
 ### 10. Relatórios e Compartilhamento
 
