@@ -4,6 +4,7 @@
 steps:
   # Step 1: Build da imagem Docker
   - name: 'gcr.io/cloud-builders/docker'
+    dir: 'apps/web'
     args:
       - 'build'
       - '-t'
