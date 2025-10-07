@@ -93,7 +93,7 @@ RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 755 /var/www/html/bootstrap/cache
 
 # Configurar Nginx
-COPY <<'EOF' /etc/nginx/nginx.conf
+RUN cat > /etc/nginx/nginx.conf <<'EOF'
 user www-data;
 worker_processes auto;
 pid /run/nginx.pid;
@@ -164,7 +164,7 @@ RUN echo "pm.max_children = 50" >> /usr/local/etc/php-fpm.d/zz-docker.conf \
     && echo "pm.max_spare_servers = 35" >> /usr/local/etc/php-fpm.d/zz-docker.conf
 
 # Configurar PHP para produção
-COPY <<'EOF' /usr/local/etc/php/conf.d/laravel.ini
+RUN cat > /usr/local/etc/php/conf.d/laravel.ini <<'EOF'
 memory_limit = 256M
 upload_max_filesize = 50M
 post_max_size = 50M
@@ -182,7 +182,7 @@ opcache.fast_shutdown=1
 EOF
 
 # Configurar Supervisor
-COPY <<'EOF' /etc/supervisor/conf.d/supervisord.conf
+RUN cat > /etc/supervisor/conf.d/supervisord.conf <<'EOF'
 [supervisord]
 nodaemon=true
 user=root
@@ -210,7 +210,7 @@ stderr_logfile_maxbytes=0
 EOF
 
 # Script de inicialização
-COPY <<'EOF' /usr/local/bin/docker-entrypoint.sh
+RUN cat > /usr/local/bin/docker-entrypoint.sh <<'EOF'
 #!/bin/bash
 set -e
 
