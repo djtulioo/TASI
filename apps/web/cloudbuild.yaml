@@ -45,9 +45,9 @@ steps:
       - '${_CPU}'
       - '--timeout'
       - '${_TIMEOUT}'
-      - '--set-env-vars'
+      - '--update-env-vars'
       - 'APP_ENV=production,APP_DEBUG=false,LOG_CHANNEL=stderr'
-      - '--set-secrets'
+      - '--update-secrets'
       - 'APP_KEY=APP_KEY:latest,DB_PASSWORD=DB_PASSWORD:latest'
 
 # Substituições padrão (podem ser sobrescritas)
