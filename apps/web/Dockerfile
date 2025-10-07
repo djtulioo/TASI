@@ -93,69 +93,7 @@ RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 755 /var/www/html/bootstrap/cache
 
 # Configurar Nginx
-RUN cat > /etc/nginx/nginx.conf <<'EOF'
-user www-data;
-worker_processes auto;
-pid /run/nginx.pid;
-error_log /dev/stderr warn;
-
-events {
-    worker_connections 1024;
-}
-
-http {
-    include /etc/nginx/mime.types;
-    default_type application/octet-stream;
-
-    log_format main '$remote_addr - $remote_user [$time_local] "$request" '
-                    '$status $body_bytes_sent "$http_referer" '
-                    '"$http_user_agent" "$http_x_forwarded_for"';
-
-    access_log /dev/stdout main;
-
-    sendfile on;
-    tcp_nopush on;
-    tcp_nodelay on;
-    keepalive_timeout 65;
-    types_hash_max_size 2048;
-
-    gzip on;
-    gzip_vary on;
-    gzip_proxied any;
-    gzip_comp_level 6;
-    gzip_types text/plain text/css text/xml text/javascript application/json application/javascript application/xml+rss application/rss+xml font/truetype font/opentype application/vnd.ms-fontobject image/svg+xml;
-
-    server {
-        listen 8080;
-        server_name _;
-        root /var/www/html/public;
-
-        index index.php;
-
-        charset utf-8;
-
-        location / {
-            try_files $uri $uri/ /index.php?$query_string;
-        }
-
-        location = /favicon.ico { access_log off; log_not_found off; }
-        location = /robots.txt  { access_log off; log_not_found off; }
-
-        error_page 404 /index.php;
-
-        location ~ \.php$ {
-            fastcgi_pass 127.0.0.1:9000;
-            fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
-            include fastcgi_params;
-            fastcgi_hide_header X-Powered-By;
-        }
-
-        location ~ /\.(?!well-known).* {
-            deny all;
-        }
-    }
-}
-EOF
+COPY docker/nginx.conf /etc/nginx/nginx.conf
 
 # Configurar PHP-FPM
 RUN echo "pm.max_children = 50" >> /usr/local/etc/php-fpm.d/zz-docker.conf \
@@ -164,73 +102,13 @@ RUN echo "pm.max_children = 50" >> /usr/local/etc/php-fpm.d/zz-docker.conf \
     && echo "pm.max_spare_servers = 35" >> /usr/local/etc/php-fpm.d/zz-docker.conf
 
 # Configurar PHP para produção
-RUN cat > /usr/local/etc/php/conf.d/laravel.ini <<'EOF'
-memory_limit = 256M
-upload_max_filesize = 50M
-post_max_size = 50M
-max_execution_time = 300
-expose_php = Off
-
-; OPcache settings
-opcache.enable=1
-opcache.memory_consumption=256
-opcache.interned_strings_buffer=16
-opcache.max_accelerated_files=10000
-opcache.revalidate_freq=0
-opcache.validate_timestamps=0
-opcache.fast_shutdown=1
-EOF
+COPY docker/laravel.ini /usr/local/etc/php/conf.d/laravel.ini
 
 # Configurar Supervisor
-RUN cat > /etc/supervisor/conf.d/supervisord.conf <<'EOF'
-[supervisord]
-nodaemon=true
-user=root
-logfile=/dev/stdout
-logfile_maxbytes=0
-pidfile=/var/run/supervisord.pid
-
-[program:php-fpm]
-command=php-fpm
-autostart=true
-autorestart=true
-stdout_logfile=/dev/stdout
-stdout_logfile_maxbytes=0
-stderr_logfile=/dev/stderr
-stderr_logfile_maxbytes=0
-
-[program:nginx]
-command=nginx -g 'daemon off;'
-autostart=true
-autorestart=true
-stdout_logfile=/dev/stdout
-stdout_logfile_maxbytes=0
-stderr_logfile=/dev/stderr
-stderr_logfile_maxbytes=0
-EOF
+COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 # Script de inicialização
-RUN cat > /usr/local/bin/docker-entrypoint.sh <<'EOF'
-#!/bin/bash
-set -e
-
-echo "Iniciando aplicação Laravel..."
-
-# Rodar migrações (se necessário)
-if [ "${RUN_MIGRATIONS}" = "true" ]; then
-    echo "Rodando migrações..."
-    php artisan migrate --force --no-interaction
-fi
-
-# Otimizações do Laravel
-php artisan config:cache
-php artisan route:cache
-php artisan view:cache
-
-# Iniciar Supervisor
-exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
-EOF
-
+COPY docker/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 # Expor porta 8080 (Cloud Run usa esta porta)
