@@ -74,7 +74,7 @@ const logout = () => {
                     <div class="flex h-16">
                         <div class="flex items-center">
                             <!-- Mobile menu button -->
-                            <button type="button" class="-m-2.5 p-2.5 text-gray-700 hover:text-gray-900 lg:hidden" @click="sidebarOpen = true">
+                            <button v-if="navigation.length > 0" type="button" class="-m-2.5 p-2.5 text-gray-700 hover:text-gray-900 lg:hidden" @click="sidebarOpen = true">
                                 <span class="sr-only">Open sidebar</span>
                                 <Bars3Icon class="size-6" aria-hidden="true" />
                             </button>
@@ -321,7 +321,7 @@ const logout = () => {
             </nav>
 
             <!-- Mobile sidebar -->
-            <TransitionRoot as="template" :show="sidebarOpen">
+            <TransitionRoot v-if="navigation.length > 0" as="template" :show="sidebarOpen">
                 <Dialog class="relative z-50 lg:hidden" @close="sidebarOpen = false">
                     <TransitionChild as="template" enter="transition-opacity ease-linear duration-300" enter-from="opacity-0" enter-to="opacity-100" leave="transition-opacity ease-linear duration-300" leave-from="opacity-100" leave-to="opacity-0">
                         <div class="fixed inset-0 bg-gray-900/80" />
@@ -367,7 +367,7 @@ const logout = () => {
             </TransitionRoot>
 
             <!-- Static sidebar for desktop - Fixed -->
-            <div class="hidden lg:fixed lg:inset-y-0 lg:z-40 lg:flex lg:w-30 lg:flex-col" style="top: 64px;">
+            <div v-if="navigation.length > 0" class="hidden lg:fixed lg:inset-y-0 lg:z-40 lg:flex lg:w-30 lg:flex-col" style="top: 64px;">
                 <!-- Sidebar component -->
                 <div class="flex grow flex-col gap-y-3 overflow-y-auto border-r border-gray-200 bg-gray-100 px-2 shadow-inner">
                     <nav class="flex flex-1 flex-col mt-5">
@@ -389,7 +389,7 @@ const logout = () => {
             </div>
 
             <!-- Main content area with proper spacing -->
-            <div class="pt-16 lg:pl-30">
+            <div :class="['pt-16', navigation.length > 0 ? 'lg:pl-30' : '']">
                 <!-- Page Heading -->
                 <header v-if="$slots.header" class="bg-white shadow">
                     <div class="mx-auto py-6 px-4 sm:px-6 lg:px-8">
