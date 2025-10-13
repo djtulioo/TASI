@@ -1,0 +1,279 @@
+Enum "gender_enum" {
+  "masculino"
+  "feminino"
+  "outro"
+  "nao_informado"
+}
+
+Enum "education_level_enum" {
+  "fundamental"
+  "medio"
+  "superior"
+  "pos_graduacao"
+  "nao_informado"
+}
+
+Enum "message_sender_enum" {
+  "usuario"
+  "chatbot"
+}
+
+Enum "report_type_enum" {
+  "demanda"
+  "sugestao"
+}
+
+Enum "report_theme_enum" {
+  "saude"
+  "educacao"
+  "transporte"
+  "seguranca"
+  "meio_ambiente"
+  "infraestrutura"
+  "cultura"
+  "esporte_lazer"
+  "assistencia_social"
+  "outro"
+}
+
+Enum "priority_urgency_enum" {
+  "baixa"
+  "media"
+  "alta"
+  "urgente"
+}
+
+Table "job_batches" {
+  "id" varchar [pk, not null]
+  "name" varchar [not null]
+  "total_jobs" int4 [not null]
+  "pending_jobs" int4 [not null]
+  "failed_jobs" int4 [not null]
+  "failed_job_ids" text [not null]
+  "options" text
+  "cancelled_at" int4
+  "created_at" int4 [not null]
+  "finished_at" int4
+}
+
+Table "failed_jobs" {
+  "id" int8 [pk, not null, default: `nextval('failed_jobs_id_seq'::regclass)`]
+  "uuid" varchar [not null]
+  "connection" text [not null]
+  "queue" text [not null]
+  "payload" text [not null]
+  "exception" text [not null]
+  "failed_at" timestamp [not null, default: 'current_timestamp']
+}
+
+Table "users" {
+  "id" int8 [pk, not null, default: `nextval('users_id_seq'::regclass)`]
+  "name" varchar [not null]
+  "email" varchar [not null]
+  "email_verified_at" timestamp
+  "password" varchar [not null]
+  "remember_token" varchar
+  "current_team_id" int8
+  "profile_photo_path" varchar
+  "created_at" timestamp [not null, default: `now()`]
+  "updated_at" timestamp [not null, default: `now()`]
+  "two_factor_secret" text
+  "two_factor_recovery_codes" text
+  "two_factor_confirmed_at" timestamp
+}
+
+Table "personal_access_tokens" {
+  "id" int8 [pk, not null, default: `nextval('personal_access_tokens_id_seq'::regclass)`]
+  "tokenable_type" varchar [not null]
+  "tokenable_id" int8 [not null]
+  "name" text [not null]
+  "token" varchar [not null]
+  "abilities" text
+  "last_used_at" timestamp
+  "expires_at" timestamp
+  "created_at" timestamp [not null, default: `now()`]
+  "updated_at" timestamp [not null, default: `now()`]
+}
+
+Table "states" {
+  "id" int4 [pk, not null]
+  "name" varchar [not null, note: 'Nome completo do estado']
+  "uf" varchar [not null, note: 'Sigla do estado (e.g., SP, RJ)']
+  "ibge_code" varchar [note: 'Código IBGE do estado']
+  "created_at" timestamp [not null, default: `now()`]
+  "updated_at" timestamp [not null, default: `now()`]
+  Note: 'Armazena os estados brasileiros para normalização de dados geográficos.'
+}
+
+Table "cities" {
+  "id" int4 [pk, not null]
+  "name" varchar [not null, note: 'Nome da cidade']
+  "state_id" int4 [not null, note: 'Chave estrangeira para a tabela de estados']
+  "ibge_code" varchar [note: 'Código IBGE da cidade']
+  "created_at" timestamp [not null, default: `now()`]
+  "updated_at" timestamp [not null, default: `now()`]
+  Note: 'Armazena as cidades brasileiras e as relaciona aos seus respectivos estados.'
+}
+
+Table "reports" {
+  "id" int4 [pk, not null]
+  "user_id" int4 [not null, note: 'ID do usuário que enviou o relato']
+  "report_type" report_type_enum [not null, note: 'Classificação do relato: demanda ou sugestão']
+  "theme" report_theme_enum [not null, note: 'Tema do relato (saúde, educação, transporte, segurança, etc.)']
+  "priority" priority_urgency_enum [not null, note: 'Nível de prioridade ou urgência do relato']
+  "description" text [not null, note: 'Descrição detalhada do relato']
+  "created_at" timestamp [not null, default: `now()`]
+  "updated_at" timestamp [not null, default: `now()`]
+  "channel_id" int4 [not null, note: 'ID do canal ao qual o relato pertence']
+  Note: 'Registra os relatos (demandas e sugestões) feitos pelos cidadãos.'
+}
+
+Table "report_messages" {
+  "report_id" int4 [not null]
+  "message_id" int4 [not null]
+  "created_at" timestamp [not null, default: `now()`]
+
+  Indexes {
+    (report_id, message_id) [pk]
+  }
+  Note: 'Tabela de junção para relacionar relatos a uma ou mais mensagens de origem.'
+}
+
+Table "team_user" {
+  "id" int8 [pk, not null, default: `nextval('team_user_id_seq'::regclass)`]
+  "team_id" int8 [not null]
+  "user_id" int8 [not null]
+  "role" varchar
+  "created_at" timestamp [not null, default: `now()`]
+  "updated_at" timestamp [not null, default: `now()`]
+}
+
+Table "messages" {
+  "id" int4 [pk, not null]
+  "user_id" int4 [not null, note: 'ID do usuário remetente ou destinatário da mensagem']
+  "content" text [not null, note: 'Conteúdo da mensagem (texto, descrição de mídia)']
+  "media_url" varchar [note: 'URL para o arquivo de mídia, se a mensagem for imagem, áudio ou vídeo']
+  "media_type" varchar [note: 'Tipo de mídia (e.g., image, audio, video), se aplicável']
+  "sent_at" timestamp [not null, note: 'Data e hora em que a mensagem foi enviada']
+  "sender_type" message_sender_enum [not null, note: 'Tipo de remetente: usuário ou chatbot']
+  "created_at" timestamp [not null, default: `now()`]
+  "updated_at" timestamp [not null, default: `now()`]
+  "channel_id" int4 [not null, note: 'ID do canal ao qual a mensagem pertence']
+  Note: 'Armazena todas as mensagens trocadas entre os cidadãos e o chatbot.'
+}
+
+Table "teams" {
+  "id" int8 [pk, not null, default: `nextval('teams_id_seq'::regclass)`]
+  "user_id" int8 [not null]
+  "name" varchar [not null]
+  "personal_team" bool [not null]
+  "last_selected_channel_id" int4 [note: 'ID do último canal selecionado pela equipe']
+  "created_at" timestamp [not null, default: `now()`]
+  "updated_at" timestamp [not null, default: `now()`]
+}
+
+Table "team_invitations" {
+  "id" int8 [pk, not null, default: `nextval('team_invitations_id_seq'::regclass)`]
+  "team_id" int8 [not null]
+  "email" varchar [not null]
+  "role" varchar
+  "created_at" timestamp [not null, default: `now()`]
+  "updated_at" timestamp [not null, default: `now()`]
+}
+
+Table "contacts" {
+  "id" int4 [pk, not null]
+  "name" varchar [not null, note: 'Nome completo do usuário']
+  "whatsapp" varchar [not null, note: 'Número de WhatsApp do usuário, principal identificador']
+  "email" varchar [note: 'Endereço de e-mail do usuário (opcional)']
+  "city_id" int4 [note: 'Chave estrangeira para a tabela de cidades']
+  "neighborhood" varchar [note: 'Bairro do usuário (opcional)']
+  "cpf" varchar [note: 'CPF do usuário (opcional)']
+  "gender" gender_enum [note: 'Gênero do usuário (opcional)']
+  "education_level" education_level_enum [note: 'Escolaridade do usuário (opcional)']
+  "date_of_birth" date [note: 'Data de nascimento do usuário (opcional)']
+  "created_at" timestamp [not null, default: `now()`]
+  "updated_at" timestamp [not null, default: `now()`]
+  Note: 'Armazena os dados dos usuários do chatbot.'
+}
+
+Table "channels" {
+  "id" int4 [pk, not null]
+  "team_id" int8 [not null, note: 'ID da equipe à qual o canal pertence']
+  "name" varchar [not null, note: 'Nome do órgão ou gestor associado ao canal']
+  "official_whatsapp_number" varchar [not null, note: 'Número de WhatsApp oficial usado pelo canal']
+  "app_id" varchar [not null, note: 'ID do aplicativo para autenticação na API do WhatsApp']
+  "app_secret" varchar [not null, note: 'Segredo do aplicativo para autenticação na API do WhatsApp']
+  "access_token" text [not null, note: 'Token de acesso para a API do WhatsApp']
+  "phone_number_id" varchar [not null, note: 'ID do número de telefone na API do WhatsApp']
+  "other_api_params" jsonb [note: 'Outros parâmetros técnicos exigidos pela API do WhatsApp em formato JSON']
+  "created_at" timestamp [not null, default: `now()`]
+  "updated_at" timestamp [not null, default: `now()`]
+  "chatbot_config" jsonb [note: 'Configurações específicas do chatbot, como regras de resposta e mensagens padrão, em formato JSON.']
+  Note: 'Registra os canais/órgãos associados ao sistema e suas configurações de integração com a API do WhatsApp.'
+}
+
+Table "migrations" {
+  "id" int4 [pk, not null, default: `nextval('migrations_id_seq'::regclass)`]
+  "migration" varchar [not null]
+  "batch" int4 [not null]
+}
+
+Table "password_reset_tokens" {
+  "email" varchar [pk, not null]
+  "token" varchar [not null]
+  "created_at" timestamp [not null, default: `now()`]
+}
+
+Table "sessions" {
+  "id" varchar [pk, not null]
+  "user_id" int8
+  "ip_address" varchar
+  "user_agent" text
+  "payload" text [not null]
+  "last_activity" int4 [not null]
+}
+
+Table "cache" {
+  "key" varchar [pk, not null]
+  "value" text [not null]
+  "expiration" int4 [not null]
+}
+
+Table "cache_locks" {
+  "key" varchar [pk, not null]
+  "owner" varchar [not null]
+  "expiration" int4 [not null]
+}
+
+Table "jobs" {
+  "id" int8 [pk, not null, default: `nextval('jobs_id_seq'::regclass)`]
+  "queue" varchar [not null]
+  "payload" text [not null]
+  "attempts" int2 [not null]
+  "reserved_at" int4
+  "available_at" int4 [not null]
+  "created_at" int4 [not null]
+}
+
+Ref:"teams"."id" < "channels"."team_id"
+
+Ref:"states"."id" < "cities"."state_id"
+
+Ref:"cities"."id" < "contacts"."city_id"
+
+Ref:"channels"."id" < "messages"."channel_id"
+
+Ref:"contacts"."id" < "messages"."user_id"
+
+Ref:"messages"."id" < "report_messages"."message_id"
+
+Ref:"reports"."id" < "report_messages"."report_id"
+
+Ref:"channels"."id" < "reports"."channel_id"
+
+Ref:"contacts"."id" < "reports"."user_id"
+
+Ref:"teams"."id" < "team_invitations"."team_id"
+
+Ref:"channels"."id" < "teams"."last_selected_channel_id"

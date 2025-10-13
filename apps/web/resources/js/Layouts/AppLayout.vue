@@ -12,6 +12,7 @@ import {
     DocumentDuplicateIcon,
     ChartPieIcon,
     ChatBubbleBottomCenterTextIcon,
+    PlusIcon,
 } from '@heroicons/vue/24/outline';
 import ApplicationMark from '@/Components/ApplicationMark.vue';
 import Banner from '@/Components/Banner.vue';
@@ -53,6 +54,24 @@ const switchToTeam = (team) => {
     }, {
         preserveState: false,
     });
+};
+
+const switchToChannel = (channel) => {
+    router.put(route('current-channel.update'), {
+        channel_id: channel.id,
+    }, {
+        preserveState: true,
+    });
+};
+
+const getChannelInitials = (name) => {
+    if (!name) return '';
+    return name
+        .split(' ')
+        .map(word => word[0])
+        .join('')
+        .toUpperCase()
+        .substring(0, 2);
 };
 
 const logout = () => {
@@ -100,8 +119,31 @@ const logout = () => {
                             </div>
                         </div>
 
-                        <div class="hidden sm:flex sm:items-center sm:ms-6">
-                            <div class="ms-3 relative">
+                        <div class="hidden sm:flex sm:items-center sm:ms-6 sm:gap-3">
+                            <!-- Channels List -->
+                            <div v-if="page.props.channels && page.props.channels.length > 0" class="flex items-center gap-2">
+                                <button
+                                    v-for="channel in page.props.channels"
+                                    :key="channel.id"
+                                    @click="switchToChannel(channel)"
+                                    :title="channel.name"
+                                    :class="[
+                                        'inline-flex items-center justify-center size-10 rounded-full text-white text-sm font-semibold transition-all duration-200',
+                                        page.props.currentChannel?.id === channel.id
+                                            ? 'bg-white text-indigo-600 ring-2 ring-white shadow-lg scale-110'
+                                            : 'bg-white/10 hover:bg-white/20 hover:scale-105'
+                                    ]"
+                                >
+                                    {{ getChannelInitials(channel.name) }}
+                                </button>
+                            </div>
+
+                            <!-- Add Channel Button -->
+                            <Link :href="route('channels.create')" title="Adicionar Canal" class="inline-flex items-center justify-center size-10 rounded-full bg-white/10 hover:bg-white/20 text-white transition-all duration-200 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-indigo-400">
+                                <PlusIcon class="size-5" aria-hidden="true" />
+                            </Link>
+
+                            <div class="ms-0 relative">
                                 <!-- Teams Dropdown -->
                                 <Dropdown v-if="page.props.jetstream?.hasTeamFeatures" align="right" width="60" class="z-[60]">
                                     <template #trigger>
@@ -205,8 +247,32 @@ const logout = () => {
                             </div>
                         </div>
 
-                        <!-- Hamburger -->
-                        <div class="-me-2 flex items-center sm:hidden">
+                        <!-- Mobile Channels & Hamburger -->
+                        <div class="-me-2 flex items-center gap-2 sm:hidden">
+                            <!-- Mobile Channels List -->
+                            <div v-if="page.props.channels && page.props.channels.length > 0" class="flex items-center gap-1.5">
+                                <button
+                                    v-for="channel in page.props.channels"
+                                    :key="channel.id"
+                                    @click="switchToChannel(channel)"
+                                    :title="channel.name"
+                                    :class="[
+                                        'inline-flex items-center justify-center size-8 rounded-full text-white text-xs font-semibold transition-all duration-200',
+                                        page.props.currentChannel?.id === channel.id
+                                            ? 'bg-white text-indigo-600 ring-2 ring-white shadow-lg scale-110'
+                                            : 'bg-white/10'
+                                    ]"
+                                >
+                                    {{ getChannelInitials(channel.name) }}
+                                </button>
+                            </div>
+
+                            <!-- Mobile Add Channel Button -->
+                            <Link :href="route('channels.create')" title="Adicionar Canal" class="inline-flex items-center justify-center size-8 rounded-full bg-white/10 text-white">
+                                <PlusIcon class="size-4" aria-hidden="true" />
+                            </Link>
+
+                            <!-- Hamburger -->
                             <button class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 focus:text-gray-500 transition duration-150 ease-in-out" @click="showingNavigationDropdown = ! showingNavigationDropdown">
                                 <svg
                                     class="size-6"

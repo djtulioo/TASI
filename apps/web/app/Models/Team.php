@@ -21,6 +21,7 @@ class Team extends JetstreamTeam
     protected $fillable = [
         'name',
         'personal_team',
+        'last_selected_channel_id',
     ];
 
     /**
@@ -44,5 +45,21 @@ class Team extends JetstreamTeam
         return [
             'personal_team' => 'boolean',
         ];
+    }
+
+    /**
+     * Get the channels for the team.
+     */
+    public function channels()
+    {
+        return $this->hasMany(Channel::class);
+    }
+
+    /**
+     * Get the last selected channel.
+     */
+    public function lastSelectedChannel()
+    {
+        return $this->belongsTo(Channel::class, 'last_selected_channel_id');
     }
 }
