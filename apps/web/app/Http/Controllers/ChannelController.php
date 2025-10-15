@@ -4,34 +4,30 @@ namespace App\Http\Controllers;
 
 use App\Models\Channel;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Redirect;
+use Illuminate\Validation\ValidationException;
+use Inertia\Inertia;
 
 class ChannelController extends Controller
 {
     /**
      * Display a listing of the channels.
-     *
-     * @return \Illuminate\Http\JsonResponse
      */
     public function index()
     {
         $channels = Channel::with('team')->get();
 
-        return response()->json([
-            'success' => true,
-            'data' => $channels
-        ], 200);
+        return Inertia::render('Channels/Index', [
+            'channels' => $channels,
+        ]);
     }
 
     /**
      * Store a newly created channel in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse
      */
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
+        $validated = $request->validate([
             'team_id' => 'required|integer|exists:teams,id',
             'name' => 'required|string|max:255',
             'official_whatsapp_number' => 'required|string|max:255',
@@ -43,103 +39,54 @@ class ChannelController extends Controller
             'chatbot_config' => 'nullable|string',
         ]);
 
-        if ($validator->fails()) {
-            // Se for requisição Inertia, retorna redirect com erros
-            if ($request->header('X-Inertia')) {
-                return back()->withErrors($validator->errors(), 'createChannel');
-            }
-
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
-        $data = $validator->validated();
-
         // Converter strings JSON para arrays
-        if (isset($data['other_api_params']) && !empty($data['other_api_params'])) {
-            $data['other_api_params'] = json_decode($data['other_api_params'], true);
+        if (!empty($validated['other_api_params'])) {
+            $validated['other_api_params'] = json_decode($validated['other_api_params'], true);
             if (json_last_error() !== JSON_ERROR_NONE) {
-                if ($request->header('X-Inertia')) {
-                    return back()->withErrors(['other_api_params' => 'Formato JSON inválido'], 'createChannel');
-                }
-                return response()->json([
-                    'success' => false,
-                    'errors' => ['other_api_params' => 'Formato JSON inválido']
-                ], 422);
+                throw ValidationException::withMessages([
+                    'other_api_params' => 'Formato JSON inválido',
+                ]);
             }
         }
 
-        if (isset($data['chatbot_config']) && !empty($data['chatbot_config'])) {
-            $data['chatbot_config'] = json_decode($data['chatbot_config'], true);
+        if (!empty($validated['chatbot_config'])) {
+            $validated['chatbot_config'] = json_decode($validated['chatbot_config'], true);
             if (json_last_error() !== JSON_ERROR_NONE) {
-                if ($request->header('X-Inertia')) {
-                    return back()->withErrors(['chatbot_config' => 'Formato JSON inválido'], 'createChannel');
-                }
-                return response()->json([
-                    'success' => false,
-                    'errors' => ['chatbot_config' => 'Formato JSON inválido']
-                ], 422);
+                throw ValidationException::withMessages([
+                    'chatbot_config' => 'Formato JSON inválido',
+                ]);
             }
         }
 
-        $channel = Channel::create($data);
+        $channel = Channel::create($validated);
 
-        // Se for requisição Inertia, retorna redirect
-        if ($request->header('X-Inertia')) {
-            return redirect()->route('dashboard')->with('success', 'Canal criado com sucesso!');
+        // Selecionar automaticamente o canal criado, se pertencer ao team atual
+        $team = $request->user()->currentTeam;
+        if ($channel->team_id === $team->id) {
+            $team->update([
+                'last_selected_channel_id' => $channel->id,
+            ]);
         }
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Canal criado com sucesso',
-            'data' => $channel
-        ], 201);
+        return Redirect::route('dashboard')->with('success', 'Canal criado com sucesso!');
     }
 
     /**
      * Display the specified channel.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\JsonResponse
      */
-    public function show($id)
+    public function show(Channel $channel)
     {
-        $channel = Channel::with('team')->find($id);
-
-        if (!$channel) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Canal não encontrado'
-            ], 404);
-        }
-
-        return response()->json([
-            'success' => true,
-            'data' => $channel
-        ], 200);
+        return Inertia::render('Channels/Show', [
+            'channel' => $channel->load('team'),
+        ]);
     }
 
     /**
      * Update the specified channel in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\JsonResponse
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, Channel $channel)
     {
-        $channel = Channel::find($id);
-
-        if (!$channel) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Canal não encontrado'
-            ], 404);
-        }
-
-        $validator = Validator::make($request->all(), [
+        $validated = $request->validate([
             'team_id' => 'sometimes|required|integer|exists:teams,id',
             'name' => 'sometimes|required|string|max:255',
             'official_whatsapp_number' => 'sometimes|required|string|max:255',
@@ -147,49 +94,41 @@ class ChannelController extends Controller
             'app_secret' => 'sometimes|required|string|max:255',
             'access_token' => 'sometimes|required|string',
             'phone_number_id' => 'sometimes|required|string|max:255',
-            'other_api_params' => 'nullable|array',
-            'chatbot_config' => 'nullable|array',
+            'other_api_params' => 'nullable|string',
+            'chatbot_config' => 'nullable|string',
         ]);
 
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+        // Converter strings JSON para arrays
+        if (isset($validated['other_api_params']) && !empty($validated['other_api_params'])) {
+            $validated['other_api_params'] = json_decode($validated['other_api_params'], true);
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                throw ValidationException::withMessages([
+                    'other_api_params' => 'Formato JSON inválido',
+                ]);
+            }
         }
 
-        $channel->update($validator->validated());
+        if (isset($validated['chatbot_config']) && !empty($validated['chatbot_config'])) {
+            $validated['chatbot_config'] = json_decode($validated['chatbot_config'], true);
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                throw ValidationException::withMessages([
+                    'chatbot_config' => 'Formato JSON inválido',
+                ]);
+            }
+        }
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Canal atualizado com sucesso',
-            'data' => $channel
-        ], 200);
+        $channel->update($validated);
+
+        return Redirect::back()->with('success', 'Canal atualizado com sucesso!');
     }
 
     /**
      * Remove the specified channel from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\JsonResponse
      */
-    public function destroy($id)
+    public function destroy(Channel $channel)
     {
-        $channel = Channel::find($id);
-
-        if (!$channel) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Canal não encontrado'
-            ], 404);
-        }
-
         $channel->delete();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Canal excluído com sucesso'
-        ], 200);
+        return Redirect::back()->with('success', 'Canal excluído com sucesso!');
     }
 }
-

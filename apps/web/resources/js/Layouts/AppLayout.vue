@@ -130,7 +130,7 @@ const logout = () => {
                                     :class="[
                                         'inline-flex items-center justify-center size-10 rounded-full text-white text-sm font-semibold transition-all duration-200',
                                         page.props.currentChannel?.id === channel.id
-                                            ? 'bg-white text-indigo-600 ring-2 ring-white shadow-lg scale-110'
+                                            ? 'bg-white/30 ring-2 ring-white/70 shadow-lg scale-110 font-bold'
                                             : 'bg-white/10 hover:bg-white/20 hover:scale-105'
                                     ]"
                                 >
@@ -259,7 +259,7 @@ const logout = () => {
                                     :class="[
                                         'inline-flex items-center justify-center size-8 rounded-full text-white text-xs font-semibold transition-all duration-200',
                                         page.props.currentChannel?.id === channel.id
-                                            ? 'bg-white text-indigo-600 ring-2 ring-white shadow-lg scale-110'
+                                            ? 'bg-white/30 ring-2 ring-white/70 shadow-lg scale-110 font-bold'
                                             : 'bg-white/10'
                                     ]"
                                 >
