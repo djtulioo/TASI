@@ -32,6 +32,11 @@ const sidebarOpen = ref(false);
 const page = usePage();
 
 const navigation = computed(() => {
+    // Retorna array vazio se não houver um channel selecionado
+    if (!page.props.currentChannel) {
+        return [];
+    }
+
     const items = [
         { name: 'Dashboard', href: route('dashboard'), icon: HomeIcon, current: route().current('dashboard') },
         // { name: 'Chat', href: route('chat'), icon: ChatBubbleBottomCenterTextIcon, current: route().current('chat') },

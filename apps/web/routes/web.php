@@ -22,6 +22,17 @@ Route::middleware([
     'verified',
 ])->group(function () {
     Route::get('/dashboard', function () {
+        $user = request()->user();
+        $currentTeam = $user->currentTeam;
+
+        // Verificar se existem canais para o time atual
+        $hasChannels = $currentTeam->channels()->exists();
+
+        // Se não houver canais, redirecionar para a página de criação
+        if (!$hasChannels) {
+            return redirect()->route('channels.create');
+        }
+
         return Inertia::render('Dashboard');
     })->name('dashboard');
 
