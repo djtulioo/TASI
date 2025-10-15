@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Controllers\ChannelController;
+use App\Http\Controllers\CurrentChannelController;
+use App\Models\Team;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -21,4 +24,14 @@ Route::middleware([
     Route::get('/dashboard', function () {
         return Inertia::render('Dashboard');
     })->name('dashboard');
+
+    // Channels
+    Route::get('/channels/create', function () {
+        return Inertia::render('Channels/Create', [
+            'teams' => Team::all(),
+        ]);
+    })->name('channels.create');
+
+    Route::post('/channels', [ChannelController::class, 'store'])->name('channels.store');
+    Route::put('/current-channel', [CurrentChannelController::class, 'update'])->name('current-channel.update');
 });

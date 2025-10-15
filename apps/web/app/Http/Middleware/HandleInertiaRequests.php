@@ -37,7 +37,42 @@ class HandleInertiaRequests extends Middleware
     {
         return [
             ...parent::share($request),
-            //
+            'channels' => function () use ($request) {
+                if (!$request->user()) {
+                    return [];
+                }
+
+                $currentTeam = $request->user()->currentTeam;
+
+                if (!$currentTeam) {
+                    return [];
+                }
+
+                return $currentTeam->channels()
+                    ->select('id', 'name', 'team_id')
+                    ->get()
+                    ->map(function ($channel) {
+                        return [
+                            'id' => $channel->id,
+                            'name' => $channel->name,
+                        ];
+                    });
+            },
+            'currentChannel' => function () use ($request) {
+                if (!$request->user()) {
+                    return null;
+                }
+
+                $currentTeam = $request->user()->currentTeam;
+
+                if (!$currentTeam || !$currentTeam->last_selected_channel_id) {
+                    return null;
+                }
+
+                return $currentTeam->lastSelectedChannel()
+                    ->select('id', 'name')
+                    ->first();
+            },
         ];
     }
 }
