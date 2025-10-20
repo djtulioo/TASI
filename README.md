@@ -1,8 +1,10 @@
-# Pulsar Político
+# **Pulsar Político - Plataforma de Ouvidoria Inteligente**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**Pulsar Político** é uma plataforma de inteligência de dados projetada para rastrear e analisar a repercussão online de fatos e personalidades políticas. Utilizando IA, a ferramenta coleta e processa dados de redes sociais como Twitter, Reddit e YouTube para fornecer insights em tempo real sobre o sentimento do eleitorado.
+**Pulsar Político** é uma plataforma de ouvidoria inteligente que conecta populações (cidadãos, clientes, colaboradores) diretamente aos administradores responsáveis, utilizando o WhatsApp como canal principal de comunicação.
+
+Através de um chatbot conversacional, o sistema coleta reclamações, feedbacks e alertas, organizando os dados e utilizando IA para gerar métricas, insights e sugestões de melhoria de forma contínua. O objetivo é transformar a escuta em inteligência acionável, ajudando gestores a compreender o que realmente "pulsa" em sua comunidade ou organização.
 
 Este projeto está sendo desenvolvido como parte da disciplina [IF1006 - Transformação Digital com IA](https://github.com/assertlab/ai-design-engineering), da [Universidade Federal de Pernambuco (UFPE)](https://www.ufpe.br).
 
@@ -10,10 +12,10 @@ Este projeto está sendo desenvolvido como parte da disciplina [IF1006 - Transfo
 
 ## 🎯 Objetivos do Projeto
 
-- **Monitoramento Contínuo:** Coletar dados de múltiplas fontes (Twitter, Reddit, YouTube) de forma automatizada.
-- **Análise de Sentimento:** Aplicar modelos de Processamento de Linguagem Natural (PLN) para classificar o sentimento (positivo, negativo, neutro) das menções.
-- **Visualização de Dados:** Apresentar os insights através de dashboards interativos, mostrando a evolução do sentimento e os tópicos mais discutidos.
-- **Identificação de Tendências:** Detectar picos de menções e mudanças abruptas de sentimento relacionadas a eventos específicos.
+- **Canal de Comunicação Acessível:** Utilizar o WhatsApp como um canal universal e de fácil acesso para que os cidadãos possam se comunicar.
+- **Coleta e Estruturação de Dados:** Capturar as interações dos usuários e, através de IA, categorizar e estruturar as informações para análise.
+- **Geração de Insights para Gestores:** Oferecer um console administrativo com dashboards, métricas e relatórios que permitam uma tomada de decisão mais rápida e baseada em dados.
+- **Melhora Contínua:** Fornecer um ciclo de feedback contínuo que ajude a aprimorar a gestão e a comunicação com a população.
 
 ---
 
@@ -25,13 +27,12 @@ Este projeto está sendo desenvolvido como parte da disciplina [IF1006 - Transfo
 | Túlio Siqueira    | Desenvolvedor Frontend / Product Owner | [@djtulioo](https://github.com/djtulioo) |
 | Neto               | Desenvolvedor / Analista de Dados    | [@ejces](https://github.com/NetoCassimiro)   |
 
+
 ---
 
 ## 🛠️ Estrutura e Arquitetura
 
-A arquitetura do sistema segue o modelo C4 para garantir clareza e manutenibilidade. Os diagramas detalhados podem ser encontrados no diretório [`/docs/diagrams`](./docs/diagrams/).
-
-*(Aqui podemos adicionar o diagrama de contexto do C4 Model quando estiver pronto)*
+A plataforma é composta por dois componentes principais: um **aplicativo web em Laravel** que serve como console para o administrador e um **serviço de chatbot** que interage com os usuários no WhatsApp.
 
 ```mermaid
 graph TD
@@ -40,30 +41,30 @@ graph TD
     classDef system fill:#90EE90,stroke:#333,stroke-width:2px,color:#222;
     classDef external fill:#D3D3D3,stroke:#333,stroke-width:2px,color:#222;
 
-    subgraph "Usuário"
-        politico("fa:fa-user Político / Assessor")
+    subgraph "Usuários"
+        cidadao("fa:fa-user Cidadão")
+        administrador("fa:fa-user-tie Administrador")
     end
 
-    subgraph "Sistema Central"
-        pulsar_politico{{"fa:fa-chart-line<br>Pulsar Político<br><size:10>[Plataforma de Análise]</size>"}}
-    end
-
-    subgraph "Fontes de Dados Externas"
-        twitter_api("fa:fa-twitter Twitter API")
-        reddit_api("fa:fa-reddit-alien Reddit API")
-        youtube_api("fa:fa-youtube YouTube API")
+    subgraph "Sistema Pulsar Político"
+        whatsapp_api("fa:fa-whatsapp WhatsApp API")
+        chatbot_service{{"fa:fa-robot<br>Serviço de Chatbot<br><size:10>[Processamento de Mensagens]</size>"}}
+        webapp_laravel{{"fa:fa-laptop-code<br>Aplicação Web (Laravel)<br><size:10>[Console do Administrador]</size>"}}
+        database("fa:fa-database Banco de Dados")
     end
 
     %% Relacionamentos
-    politico -- "Usa para obter<br>insights" --> pulsar_politico
-    pulsar_politico -- "Coleta dados via API" --> twitter_api
-    pulsar_politico -- "Coleta dados via API" --> reddit_api
-    pulsar_politico -- "Coleta dados via API" --> youtube_api
+    cidadao -- "Envia mensagem" --> whatsapp_api
+    whatsapp_api -- "Recebe e envia mensagens" --> chatbot_service
+    chatbot_service -- "Processa e armazena<br>informações" --> database
+    administrador -- "Acessa dashboards,<br>métricas e insights" --> webapp_laravel
+    webapp_laravel -- "Lê dados para<br>análise" --> database
+
 
     %% Aplicação dos Estilos
-    class politico user;
-    class pulsar_politico system;
-    class twitter_api,reddit_api,youtube_api external;
+    class cidadao,administrador user;
+    class chatbot_service,webapp_laravel,database system;
+    class whatsapp_api external;
 ```
 
 ---
@@ -78,7 +79,7 @@ Para executar o projeto localmente, siga as instruções detalhadas em nosso gui
 
 ## 🤝 Como Contribuir
 
-Estamos abertos a contribuições! Se você tem interesse em melhorar o Pulsar Político, seja corrigindo um bug ou adicionando uma nova funcionalidade, por favor, leia nosso guia de contribuição.
+Estamos abertos a contribuições! Se você tem interesse em melhorar a plataforma, seja corrigindo um bug ou adicionando uma nova funcionalidade, por favor, leia nosso guia de contribuição.
 
 ➡️ **[Guia de Contribuição](CONTRIBUTING.md)**
 
