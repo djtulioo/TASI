@@ -28,6 +28,7 @@ Este projeto está sendo desenvolvido como parte da disciplina [IF1006 - Transfo
 | Neto               | Desenvolvedor / Analista de Dados    | [@ejces](https://github.com/NetoCassimiro)   |
 
 
+
 ---
 
 ## 🛠️ Estrutura e Arquitetura
