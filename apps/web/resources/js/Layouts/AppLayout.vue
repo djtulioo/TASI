@@ -39,7 +39,7 @@ const navigation = computed(() => {
 
     const items = [
         { name: 'Dashboard', href: route('dashboard'), icon: HomeIcon, current: route().current('dashboard') },
-        // { name: 'Chat', href: route('chat'), icon: ChatBubbleBottomCenterTextIcon, current: route().current('chat') },
+        { name: 'Chat', href: route('chat'), icon: ChatBubbleBottomCenterTextIcon, current: route().current('chat') },
         // { name: 'Kanban', href: route('kanban'), icon: FolderIcon, current: route().current('kanban') },
         // { name: 'Contacts', href: route('contacts'), icon: UsersIcon, current: route().current('contacts') },
         // { name: 'Flow', href: route('flow'), icon: ChartPieIcon, current: route().current('flow') },

@@ -45,4 +45,10 @@ Route::middleware([
 
     Route::post('/channels', [ChannelController::class, 'store'])->name('channels.store');
     Route::put('/current-channel', [CurrentChannelController::class, 'update'])->name('current-channel.update');
+
+    Route::get('/chat', function () {
+        return Inertia::render('Chat');
+    })->name('chat');
+
+
 });
