@@ -5,11 +5,20 @@
         "**/.hg": true,
         "**/.DS_Store": true,
         "**/Thumbs.db": true,
+        "**/flutter/ephemeral": true,
+        "**/.symlinks": true,
+        "**/.plugin_symlinks": true,
+        "LICENSE": true,
+        "apps/web/node_modules": true,
         ".vscode": true,
-        "LICENSE": true
+        "apps/web/vendor": true,
+        "apps/web/seu_banco": true
     },
     "hide-files.files": [
+        "LICENSE",
+        "apps/web/node_modules",
         ".vscode",
-        "LICENSE"
+        "apps/web/vendor",
+        "apps/web/seu_banco"
     ]
 }
