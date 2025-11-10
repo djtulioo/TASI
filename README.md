@@ -23,7 +23,7 @@ Este projeto está sendo desenvolvido como parte da disciplina [IF1006 - Transfo
 | ------------------ | ------------------------------------ | ------------------------------------ |
 | Dário Vasconcelos  | Líder da Equipe / Desenvolvedor Backend | [@dariogsv](https://github.com/dariogsv) |
 | Túlio Siqueira    | Desenvolvedor Frontend / Product Owner | [@djtulioo](https://github.com/djtulioo) |
-| Neto               | Desenvolvedor / Engenheiro de Dados    | [](https://github.com/)   |
+| Neto               | Desenvolvedor / Engenheiro de Dados    | [@ejces](https://github.com/NetoCassimiro)   |
 
 ---
 
