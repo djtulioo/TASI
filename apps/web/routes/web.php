@@ -44,11 +44,13 @@ Route::middleware([
     })->name('channels.create');
 
     Route::post('/channels', [ChannelController::class, 'store'])->name('channels.store');
+    Route::put('/channels/{channel}', [ChannelController::class, 'update'])->name('channels.update');
+    Route::delete('/channels/{channel}', [ChannelController::class, 'destroy'])->name('channels.destroy');
     Route::put('/current-channel', [CurrentChannelController::class, 'update'])->name('current-channel.update');
 
-    Route::get('/chat', function () {
-        return Inertia::render('Chat');
-    })->name('chat');
+    Route::get('/chat', [App\Http\Controllers\ConversationController::class, 'index'])->name('chat');
+    Route::get('/chat/{senderId}', [App\Http\Controllers\ConversationController::class, 'show'])->name('chat.messages');
+    Route::post('/chat/{senderId}/send', [App\Http\Controllers\ConversationController::class, 'store'])->name('chat.send');
 
 
 });

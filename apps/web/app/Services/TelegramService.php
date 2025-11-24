@@ -6,6 +6,7 @@ use App\Models\Conversation;
 use App\Models\Channel;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 
 class TelegramService
 {
@@ -60,7 +61,8 @@ class TelegramService
         // 2. Solicita uma resposta da IA
         Log::info("TelegramService: Chamando GeminiService...");
         try {
-            $aiResponseText = $this->geminiService->generateResponse($messageBody);
+            $context = $channel->chatbot_config['context'] ?? null;
+            $aiResponseText = $this->geminiService->generateResponse($messageBody, $context);
             Log::info("TelegramService: Resposta da IA gerada: {$aiResponseText}");
         } catch (\Exception $e) {
             Log::error("TelegramService: Erro ao gerar resposta da IA: " . $e->getMessage());
@@ -91,7 +93,7 @@ class TelegramService
      * @param string $text
      * @return void
      */
-    protected function sendMessage(string $botToken, string $chatId, string $text)
+    public function sendMessage(string $botToken, string $chatId, string $text)
     {
         $url = "https://api.telegram.org/bot{$botToken}/sendMessage";
 
@@ -106,6 +108,126 @@ class TelegramService
             }
         } catch (\Exception $e) {
             Log::error("Exceção ao enviar mensagem para o Telegram: " . $e->getMessage());
+        }
+    }
+    
+    /**
+     * Define o webhook para o bot do Telegram.
+     *
+     * @param string $botToken
+     * @param string $url
+     * @return array
+     * @throws \Exception
+     */
+    public function setWebhook(string $botToken, string $url): array
+    {
+        $apiUrl = "https://api.telegram.org/bot{$botToken}/setWebhook";
+
+        try {
+            $response = Http::withoutVerifying()->post($apiUrl, [
+                'url' => $url,
+            ]);
+
+            if (!$response->successful()) {
+                Log::error("Erro ao definir webhook do Telegram: " . $response->body());
+                throw new \Exception("Falha ao configurar webhook no Telegram: " . $response->body());
+            }
+
+            return $response->json();
+        } catch (\Exception $e) {
+            Log::error("Erro ao definir webhook do Telegram: " . $e->getMessage());
+            throw $e;
+        }
+    }
+
+    /**
+     * Busca as informações do bot, incluindo avatar.
+     *
+     * @param string $botToken
+     * @return array|null
+     */
+    public function getBotInfo(string $botToken): ?array
+    {
+        $apiUrl = "https://api.telegram.org/bot{$botToken}/getMe";
+
+        try {
+            $response = Http::withoutVerifying()->get($apiUrl);
+
+            if ($response->successful()) {
+                return $response->json()['result'] ?? null;
+            }
+
+            return null;
+        } catch (\Exception $e) {
+            Log::error("Erro ao buscar informações do bot: " . $e->getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Baixa o avatar do bot do Telegram.
+     *
+     * @param string $botToken
+     * @return string|null Path to the saved avatar
+     */
+    public function downloadBotAvatar(string $botToken): ?string
+    {
+        try {
+            // Get bot info
+            $botInfo = $this->getBotInfo($botToken);
+            
+            if (!$botInfo) {
+                return null;
+            }
+
+            // Get user profile photos
+            $apiUrl = "https://api.telegram.org/bot{$botToken}/getUserProfilePhotos";
+            $response = Http::withoutVerifying()->get($apiUrl, [
+                'user_id' => $botInfo['id'],
+                'limit' => 1
+            ]);
+
+            if (!$response->successful()) {
+                return null;
+            }
+
+            $photos = $response->json()['result']['photos'] ?? [];
+            
+            if (empty($photos) || empty($photos[0])) {
+                return null;
+            }
+
+            // Get the largest photo
+            $photo = end($photos[0]);
+            $fileId = $photo['file_id'];
+
+            // Get file path
+            $fileResponse = Http::withoutVerifying()->get("https://api.telegram.org/bot{$botToken}/getFile", [
+                'file_id' => $fileId
+            ]);
+
+            if (!$fileResponse->successful()) {
+                return null;
+            }
+
+            $filePath = $fileResponse->json()['result']['file_path'] ?? null;
+            
+            if (!$filePath) {
+                return null;
+            }
+
+            // Download the file
+            $fileUrl = "https://api.telegram.org/file/bot{$botToken}/{$filePath}";
+            $imageContent = Http::withoutVerifying()->get($fileUrl)->body();
+
+            // Save to storage
+            $fileName = 'avatars/telegram_' . md5($botToken) . '.jpg';
+            Storage::disk('public')->put($fileName, $imageContent);
+
+            return $fileName;
+        } catch (\Exception $e) {
+            Log::error("Erro ao baixar avatar do bot: " . $e->getMessage());
+            return null;
         }
     }
 }

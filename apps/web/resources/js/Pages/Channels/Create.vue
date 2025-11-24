@@ -21,13 +21,15 @@ const page = usePage();
 const form = useForm({
     team_id: page.props.auth?.user?.current_team_id || '',
     name: '',
+    type: 'whatsapp', // Default to WhatsApp
+    telegram_bot_token: '',
     official_whatsapp_number: '',
     app_id: '',
     app_secret: '',
     access_token: '',
     phone_number_id: '',
     other_api_params: '',
-    chatbot_config: '',
+    chatbot_config: { context: '' },
 });
 
 const createChannel = () => {
@@ -94,6 +96,20 @@ const createChannel = () => {
                             <InputError :message="form.errors.team_id" class="mt-2" />
                         </div>
 
+                        <!-- Channel Type -->
+                        <div class="col-span-6 sm:col-span-4">
+                            <InputLabel for="type" value="Tipo de Canal" />
+                            <select
+                                id="type"
+                                v-model="form.type"
+                                class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
+                            >
+                                <option value="whatsapp">WhatsApp Cloud API</option>
+                                <option value="telegram">Telegram Bot</option>
+                            </select>
+                            <InputError :message="form.errors.type" class="mt-2" />
+                        </div>
+
                         <!-- Name -->
                         <div class="col-span-6 sm:col-span-4">
                             <InputLabel for="name" value="Nome do Canal" />
@@ -107,66 +123,85 @@ const createChannel = () => {
                             <InputError :message="form.errors.name" class="mt-2" />
                         </div>
 
-                        <!-- Official WhatsApp Number -->
-                        <div class="col-span-6 sm:col-span-4">
-                            <InputLabel for="official_whatsapp_number" value="Número WhatsApp Oficial" />
+                        <!-- Telegram Fields -->
+                        <div v-if="form.type === 'telegram'" class="col-span-6 sm:col-span-4">
+                            <InputLabel for="telegram_bot_token" value="Token do Bot (Telegram)" />
                             <TextInput
-                                id="official_whatsapp_number"
-                                v-model="form.official_whatsapp_number"
+                                id="telegram_bot_token"
+                                v-model="form.telegram_bot_token"
                                 type="text"
                                 class="mt-1 block w-full"
-                                placeholder="+55 11 99999-9999"
+                                placeholder="123456789:ABCdefGHIjklMNOpqrsTUVwxyz"
                             />
-                            <InputError :message="form.errors.official_whatsapp_number" class="mt-2" />
+                            <InputError :message="form.errors.telegram_bot_token" class="mt-2" />
+                            <p class="mt-1 text-sm text-gray-500">
+                                Crie seu bot com o <a href="https://t.me/BotFather" target="_blank" class="text-indigo-600 hover:text-indigo-900">@BotFather</a> e cole o token aqui.
+                            </p>
                         </div>
 
-                        <!-- App ID -->
-                        <div class="col-span-6 sm:col-span-4">
-                            <InputLabel for="app_id" value="App ID" />
-                            <TextInput
-                                id="app_id"
-                                v-model="form.app_id"
-                                type="text"
-                                class="mt-1 block w-full"
-                            />
-                            <InputError :message="form.errors.app_id" class="mt-2" />
-                        </div>
+                        <!-- WhatsApp Fields -->
+                        <template v-if="form.type === 'whatsapp'">
+                            <!-- Official WhatsApp Number -->
+                            <div class="col-span-6 sm:col-span-4">
+                                <InputLabel for="official_whatsapp_number" value="Número WhatsApp Oficial" />
+                                <TextInput
+                                    id="official_whatsapp_number"
+                                    v-model="form.official_whatsapp_number"
+                                    type="text"
+                                    class="mt-1 block w-full"
+                                    placeholder="+55 11 99999-9999"
+                                />
+                                <InputError :message="form.errors.official_whatsapp_number" class="mt-2" />
+                            </div>
 
-                        <!-- App Secret -->
-                        <div class="col-span-6 sm:col-span-4">
-                            <InputLabel for="app_secret" value="App Secret" />
-                            <TextInput
-                                id="app_secret"
-                                v-model="form.app_secret"
-                                type="password"
-                                class="mt-1 block w-full"
-                            />
-                            <InputError :message="form.errors.app_secret" class="mt-2" />
-                        </div>
+                            <!-- App ID -->
+                            <div class="col-span-6 sm:col-span-4">
+                                <InputLabel for="app_id" value="App ID" />
+                                <TextInput
+                                    id="app_id"
+                                    v-model="form.app_id"
+                                    type="text"
+                                    class="mt-1 block w-full"
+                                />
+                                <InputError :message="form.errors.app_id" class="mt-2" />
+                            </div>
 
-                        <!-- Access Token -->
-                        <div class="col-span-6 sm:col-span-4">
-                            <InputLabel for="access_token" value="Token de Acesso" />
-                            <textarea
-                                id="access_token"
-                                v-model="form.access_token"
-                                rows="3"
-                                class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
-                            />
-                            <InputError :message="form.errors.access_token" class="mt-2" />
-                        </div>
+                            <!-- App Secret -->
+                            <div class="col-span-6 sm:col-span-4">
+                                <InputLabel for="app_secret" value="App Secret" />
+                                <TextInput
+                                    id="app_secret"
+                                    v-model="form.app_secret"
+                                    type="password"
+                                    class="mt-1 block w-full"
+                                />
+                                <InputError :message="form.errors.app_secret" class="mt-2" />
+                            </div>
 
-                        <!-- Phone Number ID -->
-                        <div class="col-span-6 sm:col-span-4">
-                            <InputLabel for="phone_number_id" value="Phone Number ID" />
-                            <TextInput
-                                id="phone_number_id"
-                                v-model="form.phone_number_id"
-                                type="text"
-                                class="mt-1 block w-full"
-                            />
-                            <InputError :message="form.errors.phone_number_id" class="mt-2" />
-                        </div>
+                            <!-- Access Token -->
+                            <div class="col-span-6 sm:col-span-4">
+                                <InputLabel for="access_token" value="Token de Acesso" />
+                                <textarea
+                                    id="access_token"
+                                    v-model="form.access_token"
+                                    rows="3"
+                                    class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
+                                />
+                                <InputError :message="form.errors.access_token" class="mt-2" />
+                            </div>
+
+                            <!-- Phone Number ID -->
+                            <div class="col-span-6 sm:col-span-4">
+                                <InputLabel for="phone_number_id" value="Phone Number ID" />
+                                <TextInput
+                                    id="phone_number_id"
+                                    v-model="form.phone_number_id"
+                                    type="text"
+                                    class="mt-1 block w-full"
+                                />
+                                <InputError :message="form.errors.phone_number_id" class="mt-2" />
+                            </div>
+                        </template>
 
                         <!-- Other API Params (Optional) -->
                         <div class="col-span-6 sm:col-span-4">
@@ -182,18 +217,18 @@ const createChannel = () => {
                             <p class="mt-1 text-sm text-gray-500">Formato JSON válido para parâmetros adicionais da API</p>
                         </div>
 
-                        <!-- Chatbot Config (Optional) -->
+                        <!-- Contexto do Assistente -->
                         <div class="col-span-6 sm:col-span-4">
-                            <InputLabel for="chatbot_config" value="Configuração do Chatbot (JSON - Opcional)" />
+                            <InputLabel for="context" value="Contexto do Assistente (Base de Conhecimento)" />
                             <textarea
-                                id="chatbot_config"
-                                v-model="form.chatbot_config"
-                                rows="4"
-                                class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm font-mono text-sm"
-                                placeholder='{"welcome_message": "Olá! Como posso ajudar?", "timeout": 300}'
+                                id="context"
+                                v-model="form.chatbot_config.context"
+                                rows="6"
+                                class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm text-sm"
+                                placeholder="Descreva aqui o que é a ouvidoria, quais são os procedimentos padrão, FAQs, ou qualquer informação que ajude o bot a responder melhor."
                             />
-                            <InputError :message="form.errors.chatbot_config" class="mt-2" />
-                            <p class="mt-1 text-sm text-gray-500">Formato JSON válido para configurações do chatbot</p>
+                            <InputError :message="form.errors['chatbot_config.context']" class="mt-2" />
+                            <p class="mt-1 text-sm text-gray-500">Essas informações serão usadas como "cérebro" do assistente para responder às dúvidas.</p>
                         </div>
                     </template>
 

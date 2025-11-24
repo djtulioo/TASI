@@ -15,11 +15,16 @@ class GeminiService
      * @param string $prompt
      * @return string
      */
-    public function generateResponse(string $prompt): string
+    public function generateResponse(string $prompt, ?string $context = null): string
     {
         try {
             // Lógica do prompt do sistema para dar contexto à IA
-            $systemPrompt = "Você é um assistente de ouvidoria para a plataforma Pulsar. Responda de forma concisa e útil, ajudando o usuário a registrar seu feedback.";
+            $baseSystemPrompt = "Você é um assistente de ouvidoria para a plataforma Pulsar. Responda de forma concisa e útil, ajudando o usuário a registrar seu feedback.";
+            
+            $systemPrompt = $baseSystemPrompt;
+            if ($context) {
+                $systemPrompt .= "\n\nContexto adicional e instruções específicas:\n" . $context;
+            }
 
             $apiKey = env('GEMINI_API_KEY');
             if (!$apiKey) {

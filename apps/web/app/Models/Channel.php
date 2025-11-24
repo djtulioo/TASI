@@ -17,6 +17,7 @@ class Channel extends Model
     protected $fillable = [
         'team_id',
         'name',
+        'avatar_path',
         'type',
         'telegram_bot_token',
         'official_whatsapp_number',
@@ -49,13 +50,12 @@ class Channel extends Model
     }
 
     /**
-     * Get the messages for the channel.
-     * Uncomment when Message model is created
+     * Get the conversations for the channel.
      */
-    // public function messages()
-    // {
-    //     return $this->hasMany(Message::class);
-    // }
+    public function conversations()
+    {
+        return $this->hasMany(Conversation::class);
+    }
 
     /**
      * Get the reports for the channel.
@@ -65,5 +65,16 @@ class Channel extends Model
     // {
     //     return $this->hasMany(Report::class);
     // }
+
+    /**
+     * Get the avatar URL.
+     */
+    public function getAvatarUrlAttribute()
+    {
+        if ($this->avatar_path) {
+            return asset('storage/' . $this->avatar_path);
+        }
+        return null;
+    }
 }
 

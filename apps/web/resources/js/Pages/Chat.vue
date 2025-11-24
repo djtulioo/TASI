@@ -2,73 +2,75 @@
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { ref, computed } from 'vue';
 
-// Mock data - 3 conversas
-const conversations = ref([
-    {
-        id: 1,
-        name: 'Equipe de Desenvolvimento',
-        avatar: '👨‍💻',
-        lastMessage: 'Vamos revisar o código amanhã',
-        timestamp: '10:30'
+const props = defineProps({
+    initialConversations: {
+        type: Array,
+        default: () => []
     },
-    {
-        id: 2,
-        name: 'Projeto Frontend',
-        avatar: '🎨',
-        lastMessage: 'O design ficou ótimo!',
-        timestamp: '09:15'
-    },
-    {
-        id: 3,
-        name: 'Suporte Técnico',
-        avatar: '🔧',
-        lastMessage: 'Problema resolvido',
-        timestamp: 'Ontem'
+    channelId: {
+        type: Number,
+        required: true
     }
-]);
-
-// Mock messages para cada conversa
-const allMessages = ref({
-    1: [
-        { id: 1, text: 'Olá pessoal, como está o andamento do projeto?', direction: 'in', timestamp: '10:25' },
-        { id: 2, text: 'Está indo bem! Terminei a parte de autenticação.', direction: 'out', timestamp: '10:27' },
-        { id: 3, text: 'Ótimo trabalho! Vamos revisar o código amanhã', direction: 'in', timestamp: '10:30' }
-    ],
-    2: [
-        { id: 4, text: 'Enviei a nova versão do design', direction: 'in', timestamp: '09:10' },
-        { id: 5, text: 'Já recebi, vou dar uma olhada', direction: 'out', timestamp: '09:12' },
-        { id: 6, text: 'O design ficou ótimo!', direction: 'out', timestamp: '09:15' }
-    ],
-    3: [
-        { id: 7, text: 'Estou com um problema no servidor', direction: 'in', timestamp: 'Ontem' },
-        { id: 8, text: 'Pode me dar mais detalhes?', direction: 'out', timestamp: 'Ontem' },
-        { id: 9, text: 'Problema resolvido', direction: 'in', timestamp: 'Ontem' }
-    ]
 });
 
-const selectedConversation = ref(conversations.value[0]);
+const conversations = ref(props.initialConversations);
+const selectedConversation = ref(conversations.value.length > 0 ? conversations.value[0] : null);
+const messages = ref([]);
 const newMessage = ref('');
 
-const selectedMessages = computed(() => {
-    return allMessages.value[selectedConversation.value.id] || [];
+const fetchMessages = async (senderId) => {
+    try {
+        const response = await axios.get(route('chat.messages', { senderId }));
+        messages.value = response.data;
+    } catch (error) {
+        console.error('Erro ao buscar mensagens:', error);
+    }
+};
+
+// Carregar mensagens da primeira conversa ao iniciar
+if (selectedConversation.value) {
+    fetchMessages(selectedConversation.value.id);
+}
+
+// Observar mudanças nas conversas iniciais (ex: troca de canal)
+import { watch } from 'vue';
+
+watch(() => props.initialConversations, (newConversations) => {
+    conversations.value = newConversations;
+    selectedConversation.value = newConversations.length > 0 ? newConversations[0] : null;
+    
+    if (selectedConversation.value) {
+        fetchMessages(selectedConversation.value.id);
+    } else {
+        messages.value = [];
+    }
 });
+
+
 
 const selectChat = (chat) => {
     selectedConversation.value = chat;
+    fetchMessages(chat.id);
 };
 
-const sendMessage = () => {
-    if (!newMessage.value.trim()) return;
+const sendMessage = async () => {
+    if (!newMessage.value.trim() || !selectedConversation.value) return;
 
-    const message = {
-        id: Date.now(),
-        text: newMessage.value,
-        direction: 'out',
-        timestamp: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
-    };
+    const messageText = newMessage.value;
+    newMessage.value = ''; // Limpar input imediatamente para UX
 
-    allMessages.value[selectedConversation.value.id].push(message);
-    newMessage.value = '';
+    try {
+        const response = await axios.post(route('chat.send', { senderId: selectedConversation.value.id }), {
+            message: messageText
+        });
+
+        // Adicionar mensagem retornada pelo backend na lista
+        messages.value.push(response.data);
+    } catch (error) {
+        console.error('Erro ao enviar mensagem:', error);
+        // Opcional: Mostrar erro para o usuário ou restaurar o texto no input
+        newMessage.value = messageText;
+    }
 };
 </script>
 
@@ -126,7 +128,7 @@ const sendMessage = () => {
             </div>
 
             <!-- Área principal do chat -->
-            <div class="flex-1 flex flex-col">
+            <div class="flex-1 flex flex-col" v-if="selectedConversation">
                 <!-- Header do chat selecionado -->
                 <div class="p-4 border-b border-gray-200 bg-white">
                     <div class="flex items-center space-x-3">
@@ -143,7 +145,7 @@ const sendMessage = () => {
                 <!-- Área de mensagens -->
                 <div class="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
                     <div
-                        v-for="message in selectedMessages"
+                        v-for="message in messages"
                         :key="message.id"
                         :class="[
                             'flex',
@@ -181,6 +183,17 @@ const sendMessage = () => {
                             Enviar
                         </button>
                     </div>
+                </div>
+            </div>
+            
+            <!-- Placeholder quando nenhuma conversa selecionada -->
+            <div class="flex-1 flex items-center justify-center bg-gray-50" v-else>
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center text-2xl mx-auto mb-4">
+                        💬
+                    </div>
+                    <h3 class="text-lg font-medium text-gray-900">Nenhuma conversa selecionada</h3>
+                    <p class="text-gray-500 mt-1">Selecione um contato para ver as mensagens</p>
                 </div>
             </div>
         </div>
