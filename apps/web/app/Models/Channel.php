@@ -17,6 +17,8 @@ class Channel extends Model
     protected $fillable = [
         'team_id',
         'name',
+        'type',
+        'telegram_bot_token',
         'official_whatsapp_number',
         'app_id',
         'app_secret',
@@ -27,19 +29,16 @@ class Channel extends Model
     ];
 
     /**
-     * Get the attributes that should be cast.
+     * The attributes that should be cast.
      *
-     * @return array<string, string>
+     * @var array
      */
-    protected function casts(): array
-    {
-        return [
-            'other_api_params' => 'array',
-            'chatbot_config' => 'array',
-            'created_at' => 'datetime',
-            'updated_at' => 'datetime',
-        ];
-    }
+    protected $casts = [
+        'other_api_params' => 'array',
+        'chatbot_config' => 'array',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
 
     /**
      * Get the team that owns the channel.

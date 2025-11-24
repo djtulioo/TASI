@@ -23,6 +23,13 @@ class WhatsAppService
      */
     public function handleIncomingMessage(array $payload)
     {
+        // Check for status updates first
+        $statusData = $payload['entry'][0]['changes'][0]['value']['statuses'][0] ?? null;
+        if ($statusData) {
+            $this->handleStatusUpdate($statusData);
+            return;
+        }
+
         // Extrai a primeira mensagem do payload
         $messageData = $payload['entry'][0]['changes'][0]['value']['messages'][0] ?? null;
 
@@ -50,6 +57,7 @@ class WhatsAppService
             'sender_identifier' => $senderId,
             'message_body' => $messageBody,
             'direction' => 'incoming',
+            'whatsapp_message_id' => $messageData['id'] ?? null,
         ]);
 
         // 2. Solicita uma resposta da IA
@@ -67,5 +75,28 @@ class WhatsAppService
         // 4. Aqui você adicionaria a lógica para ENVIAR a $aiResponseText de volta para o usuário
         // usando a API do WhatsApp. Ex: (new WhatsAppClient())->sendMessage($senderId, $aiResponseText);
         Log::info("Resposta da IA gerada para {$senderId}: {$aiResponseText}");
+    }
+
+    /**
+     * Processa atualizações de status de mensagens (sent, delivered, read, failed).
+     *
+     * @param array $statusData
+     * @return void
+     */
+    protected function handleStatusUpdate(array $statusData)
+    {
+        $messageId = $statusData['id'];
+        $status = $statusData['status'];
+
+        Log::info("Atualização de status recebida: ID {$messageId}, Status {$status}");
+
+        $conversation = Conversation::where('whatsapp_message_id', $messageId)->first();
+
+        if ($conversation) {
+            $conversation->update(['status' => $status]);
+            Log::info("Status da mensagem {$messageId} atualizado para {$status}");
+        } else {
+            Log::warning("Mensagem não encontrada para atualização de status: {$messageId}");
+        }
     }
 }
