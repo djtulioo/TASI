@@ -17,6 +17,9 @@ class Channel extends Model
     protected $fillable = [
         'team_id',
         'name',
+        'avatar_path',
+        'type',
+        'telegram_bot_token',
         'official_whatsapp_number',
         'app_id',
         'app_secret',
@@ -27,19 +30,16 @@ class Channel extends Model
     ];
 
     /**
-     * Get the attributes that should be cast.
+     * The attributes that should be cast.
      *
-     * @return array<string, string>
+     * @var array
      */
-    protected function casts(): array
-    {
-        return [
-            'other_api_params' => 'array',
-            'chatbot_config' => 'array',
-            'created_at' => 'datetime',
-            'updated_at' => 'datetime',
-        ];
-    }
+    protected $casts = [
+        'other_api_params' => 'array',
+        'chatbot_config' => 'array',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
 
     /**
      * Get the team that owns the channel.
@@ -50,13 +50,12 @@ class Channel extends Model
     }
 
     /**
-     * Get the messages for the channel.
-     * Uncomment when Message model is created
+     * Get the conversations for the channel.
      */
-    // public function messages()
-    // {
-    //     return $this->hasMany(Message::class);
-    // }
+    public function conversations()
+    {
+        return $this->hasMany(Conversation::class);
+    }
 
     /**
      * Get the reports for the channel.
@@ -66,5 +65,16 @@ class Channel extends Model
     // {
     //     return $this->hasMany(Report::class);
     // }
+
+    /**
+     * Get the avatar URL.
+     */
+    public function getAvatarUrlAttribute()
+    {
+        if ($this->avatar_path) {
+            return asset('storage/' . $this->avatar_path);
+        }
+        return null;
+    }
 }
 

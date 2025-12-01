@@ -49,12 +49,13 @@ class HandleInertiaRequests extends Middleware
                 }
 
                 return $currentTeam->channels()
-                    ->select('id', 'name', 'team_id')
+                    ->select('id', 'name', 'avatar_path', 'team_id')
                     ->get()
                     ->map(function ($channel) {
                         return [
                             'id' => $channel->id,
                             'name' => $channel->name,
+                            'avatar_url' => $channel->avatar_url,
                         ];
                     });
             },
@@ -70,7 +71,7 @@ class HandleInertiaRequests extends Middleware
                 }
 
                 return $currentTeam->lastSelectedChannel()
-                    ->select('id', 'name')
+                    ->select('id', 'name', 'avatar_path', 'chatbot_config')
                     ->first();
             },
         ];

@@ -59,3 +59,14 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+## Telegram Integration
+
+To configure Telegram integration:
+
+1.  **Create a Bot**: Talk to [BotFather](https://t.me/BotFather) on Telegram to create a new bot and get your **Bot Token**.
+2.  **Configure Webhook**: You need to set the webhook URL for your bot. The URL structure is:
+    `https://your-domain.com/api/webhook/telegram/{bot_token}`
+    You can set this by making a GET request to:
+    `https://api.telegram.org/bot{bot_token}/setWebhook?url=https://your-domain.com/api/webhook/telegram/{bot_token}`
+3.  **Create Channel**: Add a new channel in the database with `type = 'telegram'` and the `telegram_bot_token` filled in.

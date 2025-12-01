@@ -21,6 +21,8 @@ class Conversation extends Model
         'message_body',
         'direction',
         'processed_by_ai',
+        'whatsapp_message_id',
+        'status',
     ];
 
     /**

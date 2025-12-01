@@ -13,6 +13,7 @@ import {
     ChartPieIcon,
     ChatBubbleBottomCenterTextIcon,
     PlusIcon,
+    PencilIcon,
 } from '@heroicons/vue/24/outline';
 import ApplicationMark from '@/Components/ApplicationMark.vue';
 import Banner from '@/Components/Banner.vue';
@@ -21,6 +22,7 @@ import DropdownLink from '@/Components/DropdownLink.vue';
 import NavLink from '@/Components/NavLink.vue';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
 import InertiaLoader from '@/Components/InertiaLoader.vue';
+import EditChannelModal from '@/Pages/Channels/Partials/EditChannelModal.vue';
 
 defineProps({
     title: String,
@@ -28,6 +30,7 @@ defineProps({
 
 const showingNavigationDropdown = ref(false);
 const sidebarOpen = ref(false);
+const showEditChannelModal = ref(false);
 
 const page = usePage();
 
@@ -66,7 +69,7 @@ const switchToChannel = (channel) => {
     router.put(route('current-channel.update'), {
         channel_id: channel.id,
     }, {
-        preserveState: true,
+        preserveState: false,
     });
 };
 
@@ -130,20 +133,34 @@ const logout = () => {
                         <div class="hidden sm:flex sm:items-center sm:ms-6 sm:gap-3">
                             <!-- Channels List -->
                             <div v-if="page.props.channels && page.props.channels.length > 0" class="flex items-center gap-2">
-                                <button
+                                <div
                                     v-for="channel in page.props.channels"
                                     :key="channel.id"
-                                    @click="switchToChannel(channel)"
-                                    :title="channel.name"
-                                    :class="[
-                                        'inline-flex items-center justify-center size-10 rounded-full text-white text-sm font-semibold transition-all duration-200',
-                                        page.props.currentChannel?.id === channel.id
-                                            ? 'bg-white/30 ring-2 ring-white/70 shadow-lg scale-110 font-bold'
-                                            : 'bg-white/10 hover:bg-white/20 hover:scale-105'
-                                    ]"
+                                    class="relative group"
                                 >
-                                    {{ getChannelInitials(channel.name) }}
-                                </button>
+                                    <button
+                                        @click="switchToChannel(channel)"
+                                        :title="channel.name"
+                                        :class="[
+                                            'inline-flex items-center justify-center size-10 rounded-full text-white text-sm font-semibold transition-all duration-200',
+                                            page.props.currentChannel?.id === channel.id
+                                                ? 'bg-white/30 ring-2 ring-white/70 shadow-lg scale-110 font-bold'
+                                                : 'bg-white/10 hover:bg-white/20 hover:scale-105'
+                                        ]"
+                                    >
+                                        <img v-if="channel.avatar_url" :src="channel.avatar_url" :alt="channel.name" class="size-10 rounded-full object-cover" />
+                                        <span v-else>{{ getChannelInitials(channel.name) }}</span>
+                                    </button>
+                                    <!-- Pencil icon overlay for active channel -->
+                                    <button
+                                        v-if="page.props.currentChannel?.id === channel.id"
+                                        @click.stop="showEditChannelModal = true"
+                                        class="absolute -bottom-1 -right-1 size-5 bg-indigo-600 rounded-full flex items-center justify-center text-white hover:bg-indigo-700 transition-all duration-200 shadow-md opacity-0 group-hover:opacity-100"
+                                        title="Editar Canal"
+                                    >
+                                        <PencilIcon class="size-3" />
+                                    </button>
+                                </div>
                             </div>
 
                             <!-- Add Channel Button -->
@@ -482,5 +499,11 @@ const logout = () => {
                 </main>
             </div>
         </div>
+
+        <EditChannelModal
+            :show="showEditChannelModal"
+            :channel="page.props.currentChannel"
+            @close="showEditChannelModal = false"
+        />
     </div>
 </template>
