@@ -17,12 +17,18 @@ class FeedbackEntryController extends Controller
      */
     public function index(Request $request)
     {
-        $query = FeedbackEntry::with(['channel', 'conversation']);
+        $user = $request->user();
+        $currentTeam = $user->currentTeam;
 
-        // Filtrar por canal se fornecido
-        if ($request->has('channel_id')) {
-            $query->where('channel_id', $request->channel_id);
+        // Se não houver canal atual, redirecionar para criar canal
+        if (!$currentTeam || !$currentTeam->last_selected_channel_id) {
+            return redirect()->route('channels.create');
         }
+
+        $currentChannel = $currentTeam->lastSelectedChannel;
+
+        $query = FeedbackEntry::with(['channel', 'conversation'])
+            ->where('channel_id', $currentChannel->id);
 
         // Filtrar por tipo se fornecido
         if ($request->has('tipo')) {
@@ -38,7 +44,7 @@ class FeedbackEntryController extends Controller
 
         return Inertia::render('FeedbackEntries/Index', [
             'feedbackEntries' => $feedbackEntries,
-            'filters' => $request->only(['channel_id', 'tipo', 'status']),
+            'filters' => $request->only(['tipo', 'status']),
         ]);
     }
 
