@@ -22,7 +22,7 @@ const avatarPreview = ref(null);
 const form = useForm({
     name: '',
     avatar: null,
-    chatbot_config: { 
+    chatbot_config: {
         context: '',
         urls: [],
         files: []
@@ -33,7 +33,7 @@ watch(() => props.channel, (newChannel) => {
     if (newChannel) {
         form.name = newChannel.name;
         avatarPreview.value = newChannel.avatar_url;
-        
+
         // Ensure chatbot_config is an object and has context
         let config = newChannel.chatbot_config;
         if (!config) {
@@ -45,11 +45,11 @@ watch(() => props.channel, (newChannel) => {
                 config = { context: '', urls: [], files: [] };
             }
         }
-        
+
         if (!config.context) config.context = '';
         if (!config.urls) config.urls = [];
         if (!config.files) config.files = [];
-        
+
         form.chatbot_config = config;
     }
 }, { immediate: true });
@@ -85,7 +85,7 @@ const removeFile = (index) => {
 };
 
 const updateChannel = () => {
-    form.post(route('channels.update', props.channel.id), {
+    form.put(route('channels.update', props.channel.id), {
         preserveScroll: true,
         onSuccess: () => emit('close'),
         forceFormData: true,
@@ -242,7 +242,7 @@ const close = () => {
                         class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
                     />
                     <p class="mt-1 text-sm text-gray-500">TXT, PDF, DOC, DOCX (máx. 10MB cada)</p>
-                    
+
                     <div v-if="form.chatbot_config.files.length > 0" class="mt-3 space-y-2">
                         <div v-for="(file, index) in form.chatbot_config.files" :key="index" class="flex items-center justify-between p-2 bg-gray-50 rounded">
                             <span class="text-sm text-gray-700">{{ file.name }}</span>
