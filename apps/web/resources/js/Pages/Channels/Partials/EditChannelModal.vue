@@ -85,11 +85,27 @@ const removeFile = (index) => {
 };
 
 const updateChannel = () => {
-    form.put(route('channels.update', props.channel.id), {
-        preserveScroll: true,
-        onSuccess: () => emit('close'),
-        forceFormData: true,
-    });
+    // Serializar chatbot_config como JSON string antes de enviar
+    const formData = {
+        name: form.name,
+        chatbot_config: JSON.stringify(form.chatbot_config),
+        _method: 'PUT', // Method spoofing para Laravel
+    };
+
+    // Adicionar avatar se houver um arquivo novo
+    if (form.avatar instanceof File) {
+        formData.avatar = form.avatar;
+    }
+
+    // Usar POST com method spoofing em vez de PUT quando há arquivos
+    form.transform(() => formData)
+        .post(route('channels.update', props.channel.id), {
+            preserveScroll: true,
+            onSuccess: () => {
+                emit('close');
+            },
+            forceFormData: true,
+        });
 };
 
 const deleteChannel = () => {

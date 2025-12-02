@@ -40,7 +40,7 @@ class ChannelController extends Controller
             'phone_number_id' => 'required_if:type,whatsapp|nullable|string|max:255',
             // Telegram fields (required if type is telegram)
             'telegram_bot_token' => 'required_if:type,telegram|nullable|string|max:255',
-            
+
             'other_api_params' => 'nullable|string',
             'chatbot_config' => 'nullable', // Aceita array ou string JSON
         ]);
@@ -77,20 +77,20 @@ class ChannelController extends Controller
                 // Como a rota é /webhook/telegram/{bot_token}, passamos o token como parâmetro
                 // Mas a rota definida em api.php é 'webhook/telegram/{bot_token}'
                 // Precisamos garantir que a URL seja acessível publicamente (HTTPS)
-                
+
                 $webhookUrl = route('api.webhook.telegram', ['bot_token' => $validated['telegram_bot_token']]);
-                
+
                 // Se estiver em ambiente local com ngrok, o route() pode gerar localhost
                 // O usuário deve garantir que APP_URL no .env esteja correto (ex: ngrok)
-                
+
                 $telegramService->setWebhook($validated['telegram_bot_token'], $webhookUrl);
-                
+
                 // Tentar baixar o avatar do bot automaticamente
                 $avatarPath = $telegramService->downloadBotAvatar($validated['telegram_bot_token']);
                 if ($avatarPath) {
                     $channel->update(['avatar_path' => $avatarPath]);
                 }
-                
+
             } catch (\Exception $e) {
                 // Se falhar o webhook, não impedimos a criação do canal, mas avisamos
                 // Ou poderíamos deletar o canal e retornar erro.
@@ -145,7 +145,7 @@ class ChannelController extends Controller
             if ($channel->avatar_path) {
                 \Storage::disk('public')->delete($channel->avatar_path);
             }
-            
+
             $path = $request->file('avatar')->store('avatars', 'public');
             $validated['avatar_path'] = $path;
         }
@@ -214,7 +214,7 @@ class ChannelController extends Controller
         if ($team->last_selected_channel_id === $channel->id) {
             // Tenta encontrar outro canal
             $otherChannel = $team->channels()->where('id', '!=', $channel->id)->first();
-            
+
             $team->update([
                 'last_selected_channel_id' => $otherChannel ? $otherChannel->id : null,
             ]);

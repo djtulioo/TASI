@@ -44,7 +44,7 @@ Route::middleware([
     })->name('channels.create');
 
     Route::post('/channels', [ChannelController::class, 'store'])->name('channels.store');
-    Route::put('/channels/{channel}', [ChannelController::class, 'update'])->name('channels.update');
+    Route::match(['put', 'post'], '/channels/{channel}', [ChannelController::class, 'update'])->name('channels.update');
     Route::delete('/channels/{channel}', [ChannelController::class, 'destroy'])->name('channels.destroy');
     Route::put('/current-channel', [CurrentChannelController::class, 'update'])->name('current-channel.update');
 
