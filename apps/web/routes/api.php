@@ -18,4 +18,4 @@ Route::post('/webhook/whatsapp', [WebhookController::class, 'handle']);
 // --- Integração Telegram ---
 // Rota para receber as mensagens e eventos do Telegram
 // O token do bot é passado na URL para identificar o canal
-Route::post('/webhook/telegram/{bot_token}', [\App\Http\Controllers\TelegramWebhookController::class, 'handle']);
+Route::post('/webhook/telegram/{bot_token}', [\App\Http\Controllers\TelegramWebhookController::class, 'handle'])->name('api.webhook.telegram');

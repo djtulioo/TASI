@@ -6,6 +6,7 @@ use App\Models\Team;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use App\Services\TelegramService;
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -52,5 +53,10 @@ Route::middleware([
     Route::get('/chat/{senderId}', [App\Http\Controllers\ConversationController::class, 'show'])->name('chat.messages');
     Route::post('/chat/{senderId}/send', [App\Http\Controllers\ConversationController::class, 'store'])->name('chat.send');
 
+    Route::get('/test', function () {
+        $webhookUrl = route('api.webhook.telegram', ['bot_token' => '123456789:ABCdefGHIjklMNOpqrsTUVwxyz']);
+
+        echo $webhookUrl;
+    })->name('test');
 
 });
