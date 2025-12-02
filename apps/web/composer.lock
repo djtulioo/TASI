@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "04db3005b6fa3549eb07c8208913c64b",
+    "content-hash": "d31272ed99e8a258e8b3c04574ac1b19",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -685,16 +685,16 @@
         },
         {
             "name": "google-gemini-php/client",
-            "version": "2.6.0",
+            "version": "2.7.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/google-gemini-php/client.git",
-                "reference": "c90c43a53d85715984752928628760df9c01b682"
+                "reference": "2bbd86ad919b81892445a3c0d5d3ed70d230bcb4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/google-gemini-php/client/zipball/c90c43a53d85715984752928628760df9c01b682",
-                "reference": "c90c43a53d85715984752928628760df9c01b682",
+                "url": "https://api.github.com/repos/google-gemini-php/client/zipball/2bbd86ad919b81892445a3c0d5d3ed70d230bcb4",
+                "reference": "2bbd86ad919b81892445a3c0d5d3ed70d230bcb4",
                 "shasum": ""
             },
             "require": {
@@ -708,8 +708,8 @@
                 "guzzlehttp/psr7": "^2.6.2",
                 "laravel/pint": "^1.18.1",
                 "mockery/mockery": "^1.6.7",
-                "pestphp/pest": "^2.30",
-                "phpstan/phpstan": "^1.10"
+                "pestphp/pest": "^2.32.3",
+                "phpstan/phpstan": "^2.1.32"
             },
             "suggest": {
                 "ext-fileinfo": "Reads upload file size and mime type if not provided"
@@ -736,8 +736,10 @@
             "description": "Gemini API is a supercharged PHP API client that allows you to interact with the Gemini API",
             "keywords": [
                 "Gemini",
+                "banana",
                 "client",
                 "gemini-pro",
+                "google",
                 "language",
                 "natural",
                 "nlp",
@@ -747,9 +749,19 @@
             ],
             "support": {
                 "issues": "https://github.com/google-gemini-php/client/issues",
-                "source": "https://github.com/google-gemini-php/client/tree/2.6.0"
+                "source": "https://github.com/google-gemini-php/client/tree/2.7.1"
             },
-            "time": "2025-09-12T13:29:29+00:00"
+            "funding": [
+                {
+                    "url": "https://github.com/Plytas",
+                    "type": "github"
+                },
+                {
+                    "url": "https://github.com/aydinfatih",
+                    "type": "github"
+                }
+            ],
+            "time": "2025-11-22T20:02:32+00:00"
         },
         {
             "name": "google-gemini-php/laravel",

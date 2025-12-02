@@ -32,4 +32,12 @@ class Conversation extends Model
     {
         return $this->belongsTo(Channel::class);
     }
+
+    /**
+     * Relacionamento: A conversa pode ter vários feedback entries.
+     */
+    public function feedbackEntries()
+    {
+        return $this->hasMany(FeedbackEntry::class);
+    }
 }

@@ -19,3 +19,7 @@ Route::post('/webhook/whatsapp', [WebhookController::class, 'handle']);
 // Rota para receber as mensagens e eventos do Telegram
 // O token do bot é passado na URL para identificar o canal
 Route::post('/webhook/telegram/{bot_token}', [\App\Http\Controllers\TelegramWebhookController::class, 'handle'])->name('api.webhook.telegram');
+
+// --- Feedback Entries (Ouvidoria) ---
+// Rota para processar mensagens com Gemini AI e criar feedback entries
+Route::post('/feedback/process-message', [\App\Http\Controllers\FeedbackEntryController::class, 'processMessage'])->name('api.feedback.process-message');
