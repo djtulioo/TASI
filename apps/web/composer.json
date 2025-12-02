@@ -7,7 +7,7 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
-        "google-gemini-php/client": "^2.6",
+        "google-gemini-php/client": "*",
         "google-gemini-php/laravel": "^2.0",
         "inertiajs/inertia-laravel": "^2.0",
         "laravel/framework": "^12.0",

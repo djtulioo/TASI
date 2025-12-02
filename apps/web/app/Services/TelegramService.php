@@ -7,6 +7,8 @@ use App\Models\Channel;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
+use Gemini\Data\Content;
+use Gemini\Enums\Role;
 
 class TelegramService
 {
@@ -48,28 +50,76 @@ class TelegramService
         }
         Log::info("TelegramService: Canal encontrado: {$channel->name}");
 
-        // 1. Salva a mensagem recebida no banco de dados
+        // 1. Verifica se a mensagem já foi processada (evita duplicatas)
+        $messageId = (string) $messageData['message_id'];
+        $existingMessage = Conversation::where('whatsapp_message_id', $messageId)
+            ->where('channel_id', $channel->id)
+            ->first();
+
+        if ($existingMessage) {
+            Log::info("TelegramService: Mensagem já foi processada anteriormente (ID: {$messageId}). Ignorando.");
+            return;
+        }
+
+        // 2. Salva a mensagem recebida no banco de dados
         $incomingConversation = Conversation::create([
             'channel_id' => $channel->id,
             'sender_identifier' => $senderId,
             'message_body' => $messageBody,
             'direction' => 'incoming',
-            'whatsapp_message_id' => (string) $messageData['message_id'], // Usando o campo existente para o ID da mensagem do Telegram
+            'whatsapp_message_id' => $messageId, // Usando o campo existente para o ID da mensagem do Telegram
         ]);
         Log::info("TelegramService: Mensagem salva no banco.");
 
-        // 2. Solicita uma resposta da IA
-        Log::info("TelegramService: Chamando GeminiService...");
+        // 3. Busca histórico de conversação recente do usuário (últimas 10 mensagens)
+        $recentConversations = Conversation::where('channel_id', $channel->id)
+            ->where('sender_identifier', $senderId)
+            ->orderBy('created_at', 'desc')
+            ->take(10)
+            ->get()
+            ->reverse(); // Ordem cronológica
+
+        // 4. Converte histórico para formato Gemini (objetos Content)
+        $history = [];
+        foreach ($recentConversations as $conv) {
+            if ($conv->id === $incomingConversation->id) {
+                continue; // Pula a mensagem atual (já será enviada como userMessage)
+            }
+            
+            $role = $conv->direction === 'incoming' ? Role::USER : Role::MODEL;
+            $history[] = Content::parse(part: $conv->message_body, role: $role);
+        }
+
+        // 5. Solicita uma resposta da IA com function calling (sistema de ouvidoria)
+        Log::info("TelegramService: Chamando GeminiService com function calling...");
         try {
-            $context = $channel->chatbot_config['context'] ?? null;
-            $aiResponseText = $this->geminiService->generateResponse($messageBody, $context);
+            $result = $this->geminiService->generateResponseWithFunctionCalling(
+                userMessage: $messageBody,
+                history: $history,
+                channelId: $channel->id,
+                senderIdentifier: $senderId,
+                conversationId: $incomingConversation->id
+            );
+            
+            $aiResponseText = $result['text'];
             Log::info("TelegramService: Resposta da IA gerada: {$aiResponseText}");
+
+            // Se um feedback foi cadastrado, adiciona uma mensagem informativa
+            if ($result['feedback_entry']) {
+                $entry = $result['feedback_entry'];
+                Log::info("TelegramService: Feedback cadastrado!", [
+                    'id' => $entry->id,
+                    'tipo' => $entry->tipo,
+                    'sender' => $senderId
+                ]);
+            }
         } catch (\Exception $e) {
             Log::error("TelegramService: Erro ao gerar resposta da IA: " . $e->getMessage());
+            Log::error($e->getTraceAsString());
             return;
         }
 
-        // 3. Salva a resposta da IA como uma mensagem de saída
+        // 6. Salva a resposta da IA como uma mensagem de saída
         Conversation::create([
             'channel_id' => $channel->id,
             'sender_identifier' => $senderId,
@@ -78,7 +128,7 @@ class TelegramService
             'processed_by_ai' => true,
         ]);
 
-        // 4. Envia a resposta de volta para o Telegram
+        // 7. Envia a resposta de volta para o Telegram
         Log::info("TelegramService: Enviando resposta para o Telegram...");
         $this->sendMessage($botToken, $chatId, $aiResponseText);
         

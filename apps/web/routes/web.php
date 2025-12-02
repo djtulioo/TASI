@@ -53,10 +53,10 @@ Route::middleware([
     Route::get('/chat/{senderId}', [App\Http\Controllers\ConversationController::class, 'show'])->name('chat.messages');
     Route::post('/chat/{senderId}/send', [App\Http\Controllers\ConversationController::class, 'store'])->name('chat.send');
 
-    Route::get('/test', function () {
-        $webhookUrl = route('api.webhook.telegram', ['bot_token' => '123456789:ABCdefGHIjklMNOpqrsTUVwxyz']);
-
-        echo $webhookUrl;
-    })->name('test');
+    // Feedback Entries (Ouvidoria)
+    Route::get('/feedback-entries', [App\Http\Controllers\FeedbackEntryController::class, 'index'])->name('feedback-entries.index');
+    Route::get('/feedback-entries/{feedbackEntry}', [App\Http\Controllers\FeedbackEntryController::class, 'show'])->name('feedback-entries.show');
+    Route::put('/feedback-entries/{feedbackEntry}', [App\Http\Controllers\FeedbackEntryController::class, 'update'])->name('feedback-entries.update');
+    Route::delete('/feedback-entries/{feedbackEntry}', [App\Http\Controllers\FeedbackEntryController::class, 'destroy'])->name('feedback-entries.destroy');
 
 });

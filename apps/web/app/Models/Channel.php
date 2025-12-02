@@ -58,6 +58,14 @@ class Channel extends Model
     }
 
     /**
+     * Get the feedback entries for the channel.
+     */
+    public function feedbackEntries()
+    {
+        return $this->hasMany(FeedbackEntry::class);
+    }
+
+    /**
      * Get the reports for the channel.
      * Uncomment when Report model is created
      */
