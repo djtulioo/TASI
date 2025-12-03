@@ -59,4 +59,11 @@ Route::middleware([
     Route::put('/feedback-entries/{feedbackEntry}', [App\Http\Controllers\FeedbackEntryController::class, 'update'])->name('feedback-entries.update');
     Route::delete('/feedback-entries/{feedbackEntry}', [App\Http\Controllers\FeedbackEntryController::class, 'destroy'])->name('feedback-entries.destroy');
 
+    // Analysis (Resumo e Chat RAG)
+    Route::get('/analysis', function () {
+        return Inertia::render('Analysis/Index');
+    })->name('analysis.index');
+    Route::post('/analysis/summary', [App\Http\Controllers\ChatAnalysisController::class, 'summary'])->name('analysis.summary');
+    Route::post('/analysis/chat', [App\Http\Controllers\ChatAnalysisController::class, 'chat'])->name('analysis.chat');
+
 });

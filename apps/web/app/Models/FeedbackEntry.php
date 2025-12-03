@@ -23,6 +23,7 @@ class FeedbackEntry extends Model
         'descricao',
         'sender_identifier',
         'status',
+        'created_at', // Permitir mass assignment para testes
     ];
 
     /**

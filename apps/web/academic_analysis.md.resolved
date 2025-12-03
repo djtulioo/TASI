@@ -1,0 +1,55 @@
+# Análise Acadêmica da Implementação de IA no Projeto Ouvidoria
+
+Este documento apresenta uma análise técnica e acadêmica sobre o módulo de Inteligência Artificial desenvolvido para o sistema de Ouvidoria, destacando as arquiteturas, padrões de projeto e boas práticas utilizadas.
+
+## 1. Arquitetura e Técnicas Utilizadas
+
+### 1.1. Retrieval-Augmented Generation (RAG)
+O sistema utiliza o padrão **RAG** para fundamentar as respostas do LLM (Large Language Model) em dados proprietários e atualizados. Diferente de um fine-tuning, que é estático, o RAG permite que a IA tenha acesso ao "estado atual do mundo" (neste caso, o banco de dados de conversas e feedbacks) sem necessidade de re-treinamento.
+
+### 1.2. Estratégia Híbrida de Contexto (Hybrid Context Strategy)
+Para lidar com a limitação da janela de contexto (Context Window) e otimizar custos, implementamos uma estratégia dinâmica de seleção de dados:
+
+-   **Long Context (Volume Baixo)**: Quando o volume de dados é pequeno (< 1000 mensagens), injetamos o histórico completo. Isso permite que o modelo tenha "memória perfeita" do período, captando nuances sutis e referências cruzadas.
+-   **Context Pruning & Keyword Search (Volume Alto)**: Para grandes volumes, aplicamos uma técnica de poda:
+    1.  **Recência**: Priorizamos as últimas 50 mensagens (viés de recência).
+    2.  **Relevância**: Utilizamos uma busca por palavras-chave (Keyword Search) para encontrar mensagens antigas relevantes à pergunta do usuário.
+    *Sugestão de Melhoria*: Evoluir de Keyword Search para **Busca Semântica (Semantic Search)** utilizando Embeddings (vetores), o que permitiria encontrar mensagens pelo *sentido* e não apenas pela correspondência exata de palavras.
+
+### 1.3. Injeção de Dados "Structured-First"
+Uma inovação importante neste projeto é a priorização de dados estruturados ([FeedbackEntry](file:///e:/Desktop/projetos/TASI/apps/web/app/Models/FeedbackEntry.php#9-55)) sobre dados não estruturados (logs de chat brutos).
+-   **Conceito**: A IA recebe primeiro os "fatos oficiais" (feedbacks registrados) e depois o "contexto de apoio" (conversas).
+-   **Benefício**: Reduz alucinações e garante que a resposta esteja alinhada com os registros formais da instituição.
+
+### 1.4. Processamento Incremental e Caching
+Para a geração de resumos, utilizamos uma abordagem de **Map-Reduce Temporal**:
+1.  **Map**: Cada dia é processado individualmente e o resultado é cacheado (`daily_summaries`).
+2.  **Reduce**: O resumo final é gerado a partir da consolidação dos resumos diários, não dos dados brutos.
+-   **Eficiência**: Transforma uma complexidade linear $O(n)$ (onde n é o número total de mensagens) em $O(1)$ para dias passados, reduzindo drasticamente a latência e o consumo de tokens.
+
+## 2. Boas Práticas de Engenharia de Prompt e Segurança
+
+### 2.1. Privacy by Design (Redação de PII)
+Implementamos uma camada de **Sanitização de Dados** *antes* que a informação deixe o servidor da aplicação.
+-   **Técnica**: Uso de Expressões Regulares (Regex) para identificar e ofuscar padrões de CPF, E-mail e Telefone.
+-   **Justificativa**: Garante conformidade com LGPD/GDPR, impedindo que dados sensíveis sejam processados por terceiros (API do Gemini).
+
+### 2.2. Separação de Contexto e Persona
+Para mitigar o risco de **Prompt Injection** e vazamento de contexto, utilizamos delimitadores claros e instruções de persona robustas:
+-   **Persona**: "Você é um ANALISTA DE DADOS..." (Define o escopo de atuação).
+-   **Delimitadores**: Uso de `=== SEÇÃO ===` para separar instruções do sistema dos dados do usuário.
+-   **Restrições Negativas**: "NUNCA responda como se estivesse falando com o usuário final".
+
+## 3. Sugestões de Melhorias Futuras
+
+1.  **Implementação de Vector Database (PGVector ou ChromaDB)**:
+    -   Substituir a busca simples (`LIKE`) por busca vetorial para melhorar a recuperação de contexto em perguntas complexas.
+
+2.  **Processamento Assíncrono (Filas)**:
+    -   Mover a geração de resumos para *Jobs* em background (Laravel Queues). Atualmente, se o processamento demorar mais que o timeout do HTTP (geralmente 30-60s), a requisição falha.
+
+3.  **Avaliação e Feedback (RLHF Simplificado)**:
+    -   Adicionar botões de "Joinha/Joinha pra baixo" nas respostas da IA. Isso cria um dataset para avaliar a qualidade das respostas e futuramente ajustar os prompts (Reinforcement Learning from Human Feedback).
+
+4.  **Detecção de Tópicos (Topic Modeling)**:
+    -   Utilizar a IA para categorizar automaticamente as conversas em tópicos (ex: "Financeiro", "Suporte", "Vendas") e salvar essas tags no banco, facilitando filtros futuros.

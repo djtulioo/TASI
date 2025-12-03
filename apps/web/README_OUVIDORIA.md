@@ -406,6 +406,22 @@ Para adicionar novos tipos de feedback ou melhorias:
 3. Adicione testes
 4. Atualize esta documentação
 
+## 🛠️ Utilitários de Desenvolvimento
+
+### Resetar Webhook do Telegram
+
+Para facilitar o desenvolvimento local com Ngrok (ou mudança de domínio), use o comando:
+
+```bash
+php artisan app:reset-telegram-webhook
+```
+
+O comando é interativo e solicitará:
+1. **ID do Canal**: Selecione da lista apresentada.
+2. **URL Base**: A URL do seu túnel (ex: `https://xxxx.ngrok-free.app`).
+
+Ele configurará automaticamente a rota correta `/api/webhook/telegram/{token}` na API do Telegram.
+
 ## 📝 Licença
 
 Este projeto está sob a mesma licença do projeto principal.
