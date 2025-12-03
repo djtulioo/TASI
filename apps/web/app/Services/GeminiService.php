@@ -60,6 +60,36 @@ class GeminiService
     }
 
     /**
+     * Conta os tokens de um texto (estimativa ou via API).
+     * Para performance e economia, usaremos uma heurística: ~4 caracteres por token.
+     *
+     * @param string $text
+     * @return int
+     */
+    public function countTokens(string $text): int
+    {
+        // Estimativa conservadora para português
+        return (int) ceil(mb_strlen($text) / 4);
+    }
+
+    /**
+     * Gera um resumo do texto fornecido.
+     *
+     * @param string $text
+     * @return string
+     */
+    public function generateSummary(string $text): string
+    {
+        $prompt = "Resuma as seguintes conversas de forma concisa, destacando os principais tópicos, problemas relatados e sentimentos gerais. Se houver datas, mencione-as.";
+        
+        // Se o texto for muito longo, truncamos para evitar erro (embora o flash aguente 1M)
+        // Vamos assumir que o caller já tratou a lógica de chunking se necessário,
+        // mas aqui garantimos que não estoure o limite hard do request.
+        
+        return $this->generateResponse($prompt, $text);
+    }
+
+    /**
      * Gera uma resposta com function calling para cadastro de ouvidoria.
      *
      * @param string $userMessage

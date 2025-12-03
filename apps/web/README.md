@@ -70,3 +70,10 @@ To configure Telegram integration:
     You can set this by making a GET request to:
     `https://api.telegram.org/bot{bot_token}/setWebhook?url=https://your-domain.com/api/webhook/telegram/{bot_token}`
 3.  **Create Channel**: Add a new channel in the database with `type = 'telegram'` and the `telegram_bot_token` filled in.
+
+### Utility Command
+
+To easily reset the webhook URL (e.g., when using Ngrok), run:
+```bash
+php artisan app:reset-telegram-webhook
+```

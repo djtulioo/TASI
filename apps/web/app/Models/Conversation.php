@@ -23,6 +23,7 @@ class Conversation extends Model
         'processed_by_ai',
         'whatsapp_message_id',
         'status',
+        'created_at', // Permitir mass assignment para testes/importação
     ];
 
     /**
