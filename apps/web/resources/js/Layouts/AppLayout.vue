@@ -151,8 +151,7 @@ const logout = () => {
                                                 : 'bg-white/10 hover:bg-white/20 hover:scale-105'
                                         ]"
                                     >
-                                        <img v-if="channel.avatar_url" :src="channel.avatar_url" :alt="channel.name" class="size-10 rounded-full object-cover" />
-                                        <span v-else>{{ getChannelInitials(channel.name) }}</span>
+                                        {{ getChannelInitials(channel.name) }}
                                     </button>
                                     <!-- Pencil icon overlay for active channel -->
                                     <button
