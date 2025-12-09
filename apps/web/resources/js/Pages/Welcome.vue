@@ -317,7 +317,7 @@ defineProps({
 
                 <div class="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center">
                     <p class="text-gray-400 text-sm mb-4 md:mb-0">
-                        © 2054 Pulsar. Todos os direitos reservados.
+                        © 2025 Pulsar. Todos os direitos reservados.
                     </p>
                     <p class="text-gray-500 text-xs">
                         Laravel v{{ laravelVersion }} • PHP v{{ phpVersion }}
