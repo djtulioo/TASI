@@ -35,14 +35,25 @@ Route::middleware([
         }
         
         // Coletar estatísticas do canal selecionado
+        // Coletar estatísticas do canal selecionado
         $channel = $currentTeam->lastSelectedChannel;
-        $botUserId = $channel->phone_number_id ?? $channel->telegram_bot_token;
+        // Safety check: lastSelectedChannel might be null if channels were deleted
+        if (!$channel && $hasChannels) {
+            $channel = $currentTeam->channels()->first();
+        }
+
+        $botUserId = $channel ? ($channel->phone_number_id ?? $channel->telegram_bot_token) : null;
         
         $query = \App\Models\FeedbackEntry::query();
+
         if ($botUserId) {
-            $query->where('bot_user_id', $botUserId);
+             $query->where('bot_user_id', $botUserId);
+        } elseif ($channel) {
+             $query->whereIn('channel_id', $channel->sameBotChannelIds());
         } else {
-            $query->whereIn('channel_id', $channel->sameBotChannelIds());
+             // Fallback: se não tiver canal nenhum, não retorna nada ou mostra tudo do time?
+             // Melhor não mostrar nada por segurança/consistência.
+             $query->where('id', -1);
         }
 
         $stats = [
