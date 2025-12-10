@@ -25,7 +25,10 @@ class GeminiService
         '3. SEMPRE use as funções para realmente salvar no sistema. NUNCA apenas diga que salvou sem chamar a função. ' .
         '4. Após receber o resultado da função, confirme ao usuário em linguagem natural e amigável. ' .
         '5. NUNCA mostre código Python na resposta ao usuário (como "print(...)"). ' .
-        'Fluxo correto: Conversa → Coletar informações → Propor cadastro (CHAMAR solicitar_cadastro_ouvidoria) → Aguardar confirmação → Cadastrar (CHAMAR confirmar_cadastro_ouvidoria) → Confirmar sucesso.';
+        '7. IMPORTANTE: Se você responder que algo foi "registrado", "salvo" ou "confirmado", você OBRIGATORIAMENTE deve ter chamado a função `confirmar_cadastro_ouvidoria` nesta mesma resposta. Mentir sobre isso é proibido.' .
+        '8. GATILHO: Se o usuário disser "Sim", "Confirmo" ou "Pode" após uma solicitação sua, seu ÚNICO trabalho é chamar `confirmar_cadastro_ouvidoria`. Não discuta, apenas chame.' .
+        '9. PADRONIZAÇÃO: Ao chamar `solicitar_cadastro_ouvidoria`, você deve gerar AUTOMATICAMENTE um Título profissional e curto (ex: "Manutenção em Ar Condicionado") e uma Descrição melhorada/formalizada baseada no relato do usuário. Não peça para o usuário ditar o título, sugira você o melhor.' .
+        'Fluxo correto: Conversa → Coletar informações → Propor cadastro com Título/Descrição Melhorados (CHAMAR solicitar_cadastro_ouvidoria) → Aguardar confirmação → Cadastrar (CHAMAR confirmar_cadastro_ouvidoria) → Confirmar sucesso.';
 
     /**
      * Gera uma resposta usando a IA do Gemini (versão simples, sem function calling).
@@ -104,7 +107,8 @@ class GeminiService
         array $history = [],
         int $channelId,
         ?string $senderIdentifier = null,
-        ?int $conversationId = null
+        ?int $conversationId = null,
+        ?string $botUserId = null
     ): array {
         try {
             $client = $this->getGeminiClient();
@@ -190,7 +194,8 @@ class GeminiService
                         $functionCall,
                         $channelId,
                         $senderIdentifier,
-                        $conversationId
+                        $conversationId,
+                        $botUserId
                     );
 
                     Log::info("GeminiService: Resultado da função", [
@@ -262,6 +267,22 @@ class GeminiService
                     $history[] = $followUp->candidates[0]->content;
                 }
             }
+
+            // --- Hallucination/Safety Check ---
+            // Se o texto diz que registrou, mas não temos $feedbackEntry, algo está errado.
+            $lowerText = strtolower($assistantText);
+            $impliesSuccess = (
+                str_contains($lowerText, 'registrada com sucesso') || 
+                str_contains($lowerText, 'cadastrado com sucesso') ||
+                str_contains($lowerText, 'foi registrada') ||
+                str_contains($lowerText, 'sua opinião foi registrada')
+            );
+
+            if ($impliesSuccess && !$feedbackEntry) {
+                Log::warning("GeminiService: DETECTADO HALLUCINATION. IA diz sucesso, mas não houve function call efetiva.");
+                $assistantText = "Desculpe, ocorreu um erro técnico ao tentar salvar o registro no banco de dados, apesar de eu ter dito que consegui. Por favor, poderia confirmar novamente dizendo 'sim'?";
+            }
+            // ----------------------------------
 
             return [
                 'text' => $assistantText,
@@ -346,7 +367,8 @@ class GeminiService
         $functionCall,
         int $channelId,
         ?string $senderIdentifier,
-        ?int $conversationId
+        ?int $conversationId,
+        ?string $botUserId = null
     ): array {
         $name = $functionCall->name;
         $args = $functionCall->args ?? [];
@@ -365,7 +387,8 @@ class GeminiService
                     $args,
                     $channelId,
                     $senderIdentifier,
-                    $conversationId
+                    $conversationId,
+                    $botUserId
                 ),
             ];
         }
@@ -399,7 +422,8 @@ class GeminiService
         array $args,
         int $channelId,
         ?string $senderIdentifier,
-        ?int $conversationId
+        ?int $conversationId,
+        ?string $botUserId = null
     ): array {
         $confirmar = $args['confirmar'] ?? false;
 
@@ -412,6 +436,7 @@ class GeminiService
             $feedbackEntry = FeedbackEntry::create([
                 'conversation_id' => $conversationId,
                 'channel_id' => $channelId,
+                'bot_user_id' => $botUserId,
                 'tipo' => $args['tipo'],
                 'titulo' => $args['titulo'] ?? null,
                 'descricao' => $args['descricao'],

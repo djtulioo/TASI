@@ -67,6 +67,7 @@ class TelegramService
             'sender_identifier' => $senderId,
             'message_body' => $messageBody,
             'direction' => 'incoming',
+            'bot_user_id' => $botToken,
             'whatsapp_message_id' => $messageId, // Usando o campo existente para o ID da mensagem do Telegram
         ]);
         Log::info("TelegramService: Mensagem salva no banco.");
@@ -98,7 +99,8 @@ class TelegramService
                 history: $history,
                 channelId: $channel->id,
                 senderIdentifier: $senderId,
-                conversationId: $incomingConversation->id
+                conversationId: $incomingConversation->id,
+                botUserId: $botToken
             );
             
             $aiResponseText = $result['text'];
@@ -125,6 +127,7 @@ class TelegramService
             'sender_identifier' => $senderId,
             'message_body' => $aiResponseText,
             'direction' => 'outgoing',
+            'bot_user_id' => $botToken,
             'processed_by_ai' => true,
         ]);
 

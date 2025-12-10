@@ -132,7 +132,8 @@ class FeedbackEntryController extends Controller
             history: $validated['history'] ?? [],
             channelId: $validated['channel_id'],
             senderIdentifier: $validated['sender_identifier'] ?? null,
-            conversationId: $conversation->id
+            conversationId: $conversation->id,
+            botUserId: $botUserId
         );
 
         // Salvar a resposta da IA na conversa
