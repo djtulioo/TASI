@@ -17,6 +17,7 @@ class Conversation extends Model
      */
     protected $fillable = [
         'channel_id',
+        'bot_user_id',
         'sender_identifier',
         'message_body',
         'direction',

@@ -28,9 +28,15 @@ class FeedbackEntryController extends Controller
         $currentChannel = $currentTeam->lastSelectedChannel;
 
         $relatedChannelIds = $currentChannel->sameBotChannelIds();
+        $botUserId = $currentChannel->phone_number_id ?? $currentChannel->telegram_bot_token;
 
-        $query = FeedbackEntry::with(['channel', 'conversation'])
-            ->whereIn('channel_id', $relatedChannelIds);
+        $query = FeedbackEntry::with(['channel', 'conversation']);
+
+        if ($botUserId) {
+            $query->where('bot_user_id', $botUserId);
+        } else {
+             $query->whereIn('channel_id', $relatedChannelIds);
+        }
 
         // Filtrar por tipo se fornecido
         if ($request->has('tipo')) {
@@ -102,12 +108,15 @@ class FeedbackEntryController extends Controller
         $channel = Channel::findOrFail($validated['channel_id']);
 
         // Salvar a mensagem do usuário na conversa
+        $botUserId = $channel->phone_number_id ?? $channel->telegram_bot_token;
+
         if (isset($validated['conversation_id'])) {
             $conversation = Conversation::find($validated['conversation_id']);
         } else {
             // Criar nova conversa se não existir
             $conversation = Conversation::create([
                 'channel_id' => $validated['channel_id'],
+                'bot_user_id' => $botUserId,
                 'sender_identifier' => $validated['sender_identifier'] ?? 'unknown',
                 'message_body' => $validated['message'],
                 'direction' => 'inbound',
@@ -128,6 +137,7 @@ class FeedbackEntryController extends Controller
         if ($result['text']) {
             Conversation::create([
                 'channel_id' => $validated['channel_id'],
+                'bot_user_id' => $botUserId,
                 'sender_identifier' => 'bot',
                 'message_body' => $result['text'],
                 'direction' => 'outbound',
