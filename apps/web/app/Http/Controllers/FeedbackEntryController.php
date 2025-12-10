@@ -21,21 +21,22 @@ class FeedbackEntryController extends Controller
         $currentTeam = $user->currentTeam;
 
         // Se não houver canal atual, redirecionar para criar canal
-        if (!$currentTeam || !$currentTeam->last_selected_channel_id) {
+        // Se não houver canal atual, tentar usar o primeiro disponível
+        if (!$currentTeam->last_selected_channel_id && !$currentTeam->channels()->exists()) {
             return redirect()->route('channels.create');
         }
 
-        $currentChannel = $currentTeam->lastSelectedChannel;
-
-        $relatedChannelIds = $currentChannel->sameBotChannelIds();
-        $botUserId = $currentChannel->phone_number_id ?? $currentChannel->telegram_bot_token;
+        $currentChannel = $currentTeam->lastSelectedChannel ?? $currentTeam->channels()->first();
+        $botUserId = $currentChannel ? ($currentChannel->phone_number_id ?? $currentChannel->telegram_bot_token) : null;
 
         $query = FeedbackEntry::with(['channel', 'conversation']);
 
         if ($botUserId) {
             $query->where('bot_user_id', $botUserId);
+        } elseif ($currentChannel) {
+             $query->where('channel_id', $currentChannel->id);
         } else {
-             $query->whereIn('channel_id', $relatedChannelIds);
+             $query->where('id', -1); // Fallback safe
         }
 
         // Filtrar por tipo se fornecido
@@ -106,6 +107,7 @@ class FeedbackEntryController extends Controller
         ]);
 
         $channel = Channel::findOrFail($validated['channel_id']);
+        $botUserId = $channel->phone_number_id ?? $channel->telegram_bot_token;
 
         // Salvar a mensagem do usuário na conversa
         $botUserId = $channel->phone_number_id ?? $channel->telegram_bot_token;
