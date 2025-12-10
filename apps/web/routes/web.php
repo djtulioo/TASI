@@ -33,8 +33,39 @@ Route::middleware([
         if (!$hasChannels) {
             return redirect()->route('channels.create');
         }
+        
+        // Coletar estatísticas do canal selecionado
+        $channel = $currentTeam->lastSelectedChannel;
+        $botUserId = $channel->phone_number_id ?? $channel->telegram_bot_token;
+        
+        $query = \App\Models\FeedbackEntry::query();
+        if ($botUserId) {
+            $query->where('bot_user_id', $botUserId);
+        } else {
+            $query->whereIn('channel_id', $channel->sameBotChannelIds());
+        }
 
-        return Inertia::render('Dashboard');
+        $stats = [
+            'total' => (clone $query)->count(),
+            'pending' => (clone $query)->where('status', 'pendente')->count(),
+            'resolved' => (clone $query)->where('status', 'resolvido')->count(),
+            'analyzing' => (clone $query)->where('status', 'em_analise')->count(),
+            'recent' => (clone $query)->with('conversation')->latest()->take(5)->get()
+                ->map(function($entry) {
+                    return [
+                        'id' => $entry->id,
+                        'title' => $entry->titulo ?? 'Sem título',
+                        'description' => \Illuminate\Support\Str::limit($entry->descricao, 50),
+                        'status' => $entry->status,
+                        'date' => $entry->created_at->diffForHumans(),
+                        'type' => $entry->tipo
+                    ];
+                })
+        ];
+
+        return Inertia::render('Dashboard', [
+            'stats' => $stats
+        ]);
     })->name('dashboard');
 
     // Channels

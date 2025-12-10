@@ -44,7 +44,7 @@ const navigation = computed(() => {
     const items = [
         { name: 'Dashboard', href: route('dashboard'), icon: HomeIcon, current: route().current('dashboard') },
         { name: 'Chat', href: route('chat'), icon: ChatBubbleBottomCenterTextIcon, current: route().current('chat') },
-        { name: 'Ouvidoria', href: route('feedback-entries.index'), icon: MegaphoneIcon, current: route().current('feedback-entries.*') },
+        { name: 'Chamados', href: route('feedback-entries.index'), icon: MegaphoneIcon, current: route().current('feedback-entries.*') },
         { name: 'Análise', href: route('analysis.index'), icon: ChartPieIcon, current: route().current('analysis.*') },
         // { name: 'Kanban', href: route('kanban'), icon: FolderIcon, current: route().current('kanban') },
         // { name: 'Contacts', href: route('contacts'), icon: UsersIcon, current: route().current('contacts') },
