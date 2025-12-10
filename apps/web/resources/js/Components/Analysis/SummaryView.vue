@@ -1,6 +1,7 @@
 <script setup>
-import { ref, watch } from 'vue';
+import { ref, watch, computed } from 'vue';
 import axios from 'axios';
+import { marked } from 'marked';
 
 const props = defineProps({
     dateRange: {
@@ -12,6 +13,10 @@ const props = defineProps({
 const summary = ref('');
 const loading = ref(false);
 const error = ref(null);
+
+const formattedSummary = computed(() => {
+    return summary.value ? marked(summary.value) : '';
+});
 
 async function fetchSummary(includeToday = false) {
     loading.value = true;
@@ -66,8 +71,6 @@ watch(() => props.dateRange, () => {
             </div>
         </div>
 
-        <div v-else class="prose max-w-none bg-gray-50 p-6 rounded-lg border border-gray-200 whitespace-pre-wrap">
-            {{ summary }}
-        </div>
+        <div v-else class="prose max-w-none bg-gray-50 p-6 rounded-lg border border-gray-200" v-html="formattedSummary"></div>
     </div>
 </template>
