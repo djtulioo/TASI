@@ -27,8 +27,10 @@ class FeedbackEntryController extends Controller
 
         $currentChannel = $currentTeam->lastSelectedChannel;
 
+        $relatedChannelIds = $currentChannel->sameBotChannelIds();
+
         $query = FeedbackEntry::with(['channel', 'conversation'])
-            ->where('channel_id', $currentChannel->id);
+            ->whereIn('channel_id', $relatedChannelIds);
 
         // Filtrar por tipo se fornecido
         if ($request->has('tipo')) {

@@ -84,5 +84,27 @@ class Channel extends Model
         }
         return null;
     }
+    /**
+     * Get IDs of all channels that share the same Bot Identity.
+     */
+    public function sameBotChannelIds()
+    {
+        // Se for WhatsApp e tiver ID do telefone
+        if ($this->phone_number_id) {
+            return self::where('phone_number_id', $this->phone_number_id)
+                ->pluck('id')
+                ->toArray();
+        }
+
+        // Se for Telegram e tiver token
+        if ($this->telegram_bot_token) {
+            return self::where('telegram_bot_token', $this->telegram_bot_token)
+                ->pluck('id')
+                ->toArray();
+        }
+
+        // Fallback: retorna apenas o próprio ID
+        return [$this->id];
+    }
 }
 

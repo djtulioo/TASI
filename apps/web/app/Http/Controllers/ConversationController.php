@@ -25,16 +25,20 @@ class ConversationController extends Controller
 
         $channelId = $team->last_selected_channel_id;
 
+        // Obter todos os IDs de canais relacionados ao mesmo Bot
+        $channel = Channel::find($channelId);
+        $relatedChannelIds = $channel ? $channel->sameBotChannelIds() : [$channelId];
+
         // Agrupar mensagens por sender_identifier para criar a lista de "conversas"
         // Pegamos a última mensagem de cada sender para mostrar no preview
-        $conversations = Conversation::where('channel_id', $channelId)
+        $conversations = Conversation::whereIn('channel_id', $relatedChannelIds)
             ->select('sender_identifier', DB::raw('MAX(created_at) as last_message_at'))
             ->groupBy('sender_identifier')
             ->orderBy('last_message_at', 'desc')
             ->get()
-            ->map(function ($group) use ($channelId) {
+            ->map(function ($group) use ($relatedChannelIds) {
                 // Para cada grupo, pegamos os detalhes da última mensagem
-                $lastMessage = Conversation::where('channel_id', $channelId)
+                $lastMessage = Conversation::whereIn('channel_id', $relatedChannelIds)
                     ->where('sender_identifier', $group->sender_identifier)
                     ->orderBy('created_at', 'desc')
                     ->first();
@@ -64,7 +68,10 @@ class ConversationController extends Controller
         $team = $user->currentTeam;
         $channelId = $team->last_selected_channel_id;
 
-        $messages = Conversation::where('channel_id', $channelId)
+        $channel = Channel::find($channelId);
+        $relatedChannelIds = $channel ? $channel->sameBotChannelIds() : [$channelId];
+
+        $messages = Conversation::whereIn('channel_id', $relatedChannelIds)
             ->where('sender_identifier', $senderId)
             ->orderBy('created_at', 'asc')
             ->get()
