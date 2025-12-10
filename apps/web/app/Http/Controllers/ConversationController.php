@@ -27,21 +27,33 @@ class ConversationController extends Controller
 
         // Obter todos os IDs de canais relacionados ao mesmo Bot
         $channel = Channel::find($channelId);
-        $relatedChannelIds = $channel ? $channel->sameBotChannelIds() : [$channelId];
+        $botUserId = $channel ? ($channel->phone_number_id ?? $channel->telegram_bot_token) : null;
+
+        $query = Conversation::query();
+        if ($botUserId) {
+            $query->where('bot_user_id', $botUserId);
+        } else {
+             // Fallback para canais antigos sem bot_id (ou lógica anterior)
+             $query->where('channel_id', $channelId);
+        }
 
         // Agrupar mensagens por sender_identifier para criar a lista de "conversas"
         // Pegamos a última mensagem de cada sender para mostrar no preview
-        $conversations = Conversation::whereIn('channel_id', $relatedChannelIds)
-            ->select('sender_identifier', DB::raw('MAX(created_at) as last_message_at'))
+        $conversations = $query->select('sender_identifier', DB::raw('MAX(created_at) as last_message_at'))
             ->groupBy('sender_identifier')
             ->orderBy('last_message_at', 'desc')
             ->get()
-            ->map(function ($group) use ($relatedChannelIds) {
+            ->map(function ($group) use ($botUserId, $channelId) {
                 // Para cada grupo, pegamos os detalhes da última mensagem
-                $lastMessage = Conversation::whereIn('channel_id', $relatedChannelIds)
-                    ->where('sender_identifier', $group->sender_identifier)
-                    ->orderBy('created_at', 'desc')
-                    ->first();
+                $msgQuery = Conversation::where('sender_identifier', $group->sender_identifier);
+
+                if ($botUserId) {
+                    $msgQuery->where('bot_user_id', $botUserId);
+                } else {
+                    $msgQuery->where('channel_id', $channelId);
+                }
+
+                $lastMessage = $msgQuery->orderBy('created_at', 'desc')->first();
 
                 return [
                     'id' => $group->sender_identifier, // Usamos o sender_identifier como ID da conversa
@@ -69,11 +81,17 @@ class ConversationController extends Controller
         $channelId = $team->last_selected_channel_id;
 
         $channel = Channel::find($channelId);
-        $relatedChannelIds = $channel ? $channel->sameBotChannelIds() : [$channelId];
+        $botUserId = $channel ? ($channel->phone_number_id ?? $channel->telegram_bot_token) : null;
 
-        $messages = Conversation::whereIn('channel_id', $relatedChannelIds)
-            ->where('sender_identifier', $senderId)
-            ->orderBy('created_at', 'asc')
+        $query = Conversation::where('sender_identifier', $senderId);
+
+        if ($botUserId) {
+            $query->where('bot_user_id', $botUserId);
+        } else {
+            $query->where('channel_id', $channelId);
+        }
+
+        $messages = $query->orderBy('created_at', 'asc')
             ->get()
             ->map(function ($msg) {
                 return [
@@ -101,9 +119,12 @@ class ConversationController extends Controller
         
         $channel = Channel::findOrFail($channelId);
 
-        // Salvar mensagem no banco
+        // Salvar mensagem no banco com bot_user_id
+        $botUserId = $channel->phone_number_id ?? $channel->telegram_bot_token;
+
         $conversation = Conversation::create([
             'channel_id' => $channelId,
+            'bot_user_id' => $botUserId,
             'sender_identifier' => $senderId,
             'message_body' => $request->message,
             'direction' => 'outgoing',

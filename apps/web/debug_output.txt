@@ -1,0 +1,16 @@
+Total Channels: 2
+ID: 9 | Name: Ouvidoria Cin | Team ID: 1 | Type: telegram
+   Phone ID: NULL
+   Telegram Token: SET
+   Related IDs: 9, 10
+   Conversations: 0
+--------------------------------------------------
+ID: 10 | Name: Ouvidoria Cin | Team ID: 1 | Type: telegram
+   Phone ID: NULL
+   Telegram Token: SET
+   Related IDs: 9, 10
+   Conversations: 0
+--------------------------------------------------
+
+Distinct Channel IDs in Conversations: 
+Daily Summaries Count: 3

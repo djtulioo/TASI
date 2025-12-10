@@ -18,6 +18,7 @@ class FeedbackEntry extends Model
     protected $fillable = [
         'conversation_id',
         'channel_id',
+        'bot_user_id',
         'tipo',
         'titulo',
         'descricao',

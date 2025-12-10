@@ -37,6 +37,7 @@ class BotIdentityTest extends TestCase
         // 3. Criar conversa no Canal A
         $conversationA = Conversation::create([
             'channel_id' => $channelA->id,
+            'bot_user_id' => '123456789', // Simulando o comportamento do Controller
             'sender_identifier' => '5511999999999',
             'message_body' => 'Mensagem Original',
             'direction' => 'incoming',
@@ -45,6 +46,7 @@ class BotIdentityTest extends TestCase
         // 4. Criar Feedback no Canal A
         FeedbackEntry::create([
             'channel_id' => $channelA->id,
+            'bot_user_id' => '123456789',
             'conversation_id' => $conversationA->id,
             'tipo' => 'opiniao', // 'elogio' não existe no enum
             'descricao' => 'Bom atendimento', // 'conteudo' não existe, é 'descricao'
@@ -100,6 +102,7 @@ class BotIdentityTest extends TestCase
         
         Conversation::create([
             'channel_id' => $channelA->id,
+            'bot_user_id' => 'BOT_A_ID',
             'sender_identifier' => 'client_1',
             'message_body' => 'Segredo do Bot A',
             'direction' => 'incoming',
